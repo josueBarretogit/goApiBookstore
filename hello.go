@@ -1,14 +1,15 @@
 package main
 
-import "fmt"
-
-type Vertex struct {
-	X int
-	Y int
-}
+import (
+	"fmt"
+	"net/http"
+)
 
 func main() {
-	v := Vertex{1, 2}
-	v.X = 4
-	fmt.Println(v.X)
+
+	http.HandleFunc("/", func(res http.ResponseWriter, req *http.Request) {
+
+		fmt.Printf("hello request from go %s \n", req.URL)
+	})
+	http.ListenAndServe(":80", nil)
 }
