@@ -1,6 +1,7 @@
 package main
 
 import (
+	"api/bookstoreApi/initializers"
 	"errors"
 	"net/http"
 
@@ -59,13 +60,16 @@ func toggleTodoEstado(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, todo)
 }
 
+func init() {
+	initializers.LoadEnvVariables()
+}
+
 func main() {
-
-	router := gin.Default()
-	router.GET("/todos", getTodos)
-	router.GET("/todos/:id", getTodos)
-	router.PATCH("/todos/:id", toggleTodoEstado)
-	router.POST("/todos/create", addTodo)
-
-	router.Run("localhost:8080")
+	r := gin.Default()
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
+	r.Run() // listen and serve on 0.0.0.0:8080
 }
