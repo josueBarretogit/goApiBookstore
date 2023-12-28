@@ -3,9 +3,8 @@ package main
 import (
 	"api/bookstoreApi/initializers"
 	"errors"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 type Todo struct {
@@ -62,6 +61,7 @@ func toggleTodoEstado(context *gin.Context) {
 
 func init() {
 	initializers.LoadEnvVariables()
+	initializers.ConnectToDB()
 }
 
 func main() {
