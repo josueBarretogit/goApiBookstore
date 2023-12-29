@@ -8,9 +8,8 @@ import (
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
-
-func ConnectToDB() {
+func ConnectToDB() *gorm.DB {
+	LoadEnvVariables()
 	var error error
 
 	dsn := os.Getenv("DB_URI")
@@ -18,5 +17,7 @@ func ConnectToDB() {
 	if error != nil {
 		log.Fatal("Failed to connect to db")
 	}
-	println(DB.NamingStrategy)
+	return DB
 }
+
+var DB *gorm.DB = ConnectToDB()

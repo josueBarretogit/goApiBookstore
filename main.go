@@ -1,10 +1,12 @@
 package main
 
 import (
+	"api/bookstoreApi/controllers"
 	"api/bookstoreApi/initializers"
 	"errors"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Todo struct {
@@ -61,15 +63,15 @@ func toggleTodoEstado(context *gin.Context) {
 
 func init() {
 	initializers.LoadEnvVariables()
-	initializers.ConnectToDB()
 }
 
 func main() {
+
+	//Db := initializers.ConnectToDB()
+
 	r := gin.Default()
-	r.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
+
+	r.POST("/post/create", controllers.PostCreate)
+
 	r.Run() // listen and serve on 0.0.0.0:8080
 }
