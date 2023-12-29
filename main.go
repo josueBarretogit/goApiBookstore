@@ -1,6 +1,8 @@
 package main
 
 import (
+	"api/bookstoreApi/controllers"
+	"api/bookstoreApi/initializers"
 	"errors"
 	"net/http"
 
@@ -59,13 +61,20 @@ func toggleTodoEstado(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, todo)
 }
 
+func init() {
+	initializers.LoadEnvVariables()
+}
+
 func main() {
 
-	router := gin.Default()
-	router.GET("/todos", getTodos)
-	router.GET("/todos/:id", getTodos)
-	router.PATCH("/todos/:id", toggleTodoEstado)
-	router.POST("/todos/create", addTodo)
+	//Db := initializers.ConnectToDB()
 
-	router.Run("localhost:8080")
+	r := gin.Default()
+
+	r.POST("/post/create", controllers.PostCreate)
+	r.GET("/post/getAll", controllers.ReadPost)
+	r.PUT("/post/update/:id", controllers.UpdatePost)
+	r.DELETE("/post/delete/:id", controllers.DeletePost)
+
+	r.Run() // listen and serve on 0.0.0.0:8080
 }
