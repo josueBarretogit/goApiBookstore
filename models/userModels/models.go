@@ -1,40 +1,11 @@
-package models
+package usermodels
 
 import (
-	"time"
+	bookmodels "api/bookstoreApi/models/bookModels"
+	paymentmodels "api/bookstoreApi/models/paymentModels"
 
 	"gorm.io/gorm"
 )
-
-type Book struct {
-	gorm.Model
-	Title           string
-	CoverUrl        string
-	Description     string
-	numPages        int
-	Rating          int
-	PublicationDate time.Time
-	Genre           string
-	Language        string
-	ISBN            string
-	Ranking         string
-	Stock           int64
-	BookFormat      []BookFormat
-}
-
-type BookFormat struct {
-	gorm.Model
-	FormatName string
-	Price      float64
-	BookID     uint
-}
-
-type DigitalFormat struct {
-	gorm.Model
-	FormatName string
-	Price      float64
-	BookID     uint
-}
 
 type Author struct {
 	gorm.Model
@@ -45,6 +16,7 @@ type Author struct {
 	AccountID         uint
 	Account           Account
 	PublisherAuthor   []PublisherAuthor
+	Book              []bookmodels.Book
 }
 
 type Customer struct {
@@ -57,6 +29,7 @@ type Customer struct {
 	ProfilePictureUrl string
 	AccountID         uint
 	Account           Account
+	Purchases         []paymentmodels.Purchase
 }
 
 type Account struct {
