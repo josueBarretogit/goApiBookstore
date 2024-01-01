@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"api/bookstoreApi/initializers"
 	"api/bookstoreApi/models"
 
 	"github.com/gin-gonic/gin"

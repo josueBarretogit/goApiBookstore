@@ -1,15 +1,19 @@
-package initializers
+package database
 
 import (
-	"log"
-	"os"
-
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log"
+	"os"
 )
 
+type Db interface {
+	Migrate()
+	Connect()
+	Disconnect()
+}
+
 func ConnectToDB() *gorm.DB {
-	LoadEnvVariables()
 	var error error
 
 	dsn := os.Getenv("DB_URI")
