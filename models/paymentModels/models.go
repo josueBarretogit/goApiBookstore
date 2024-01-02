@@ -4,7 +4,6 @@ import (
 	bookmodels "api/bookstoreApi/models/bookModels"
 	"time"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -12,7 +11,7 @@ type Purchase struct {
 	gorm.Model
 	DatePurchased   time.Time
 	ChargedDelivery bool
-	UuidPurchase    uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()`
+	UuidPurchase    string
 	AddressShipTo   string
 	TotalPrice      float32
 	deliveredDate   time.Time
@@ -31,15 +30,18 @@ type PurchaseDetails struct {
 
 type Review struct {
 	gorm.Model
-	Rating     int
-	Title      string
-	BodyReview string
+	Rating            int
+	Title             string
+	BodyReview        string
+	PurchaseDetailsID uint
 }
 
 type PaymentMethod struct {
 	gorm.Model
-	Name      string
-	Purchases []Purchase
+	Name        string
+	Purchases   []Purchase
+	BankAccount BankAccount
+	CreditCard  CreditCard
 }
 
 type BankAccount struct {

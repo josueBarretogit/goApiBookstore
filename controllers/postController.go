@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"api/bookstoreApi/models"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -91,9 +89,9 @@ func UpdatePost(c *gin.Context) {
 func DeletePost(c *gin.Context) {
 
 	var postToDelete models.Post
-	id := c.Param("id")
+	//id := c.Param("id")
 
-	result := initializers.DB.Delete(&postToDelete, id)
+	//result := initializers.DB.Delete(&postToDelete, id)
 
 	if result.Error != nil {
 		c.JSON(500, gin.H{
@@ -107,3 +105,4 @@ func DeletePost(c *gin.Context) {
 	})
 
 }
+

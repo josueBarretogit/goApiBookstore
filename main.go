@@ -1,8 +1,8 @@
 package main
 
 import (
-	"api/bookstoreApi/controllers"
-	"api/bookstoreApi/initializers"
+	"api/bookstoreApi/config"
+	"api/bookstoreApi/database/migrations"
 	"errors"
 	"net/http"
 
@@ -61,20 +61,12 @@ func toggleTodoEstado(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, todo)
 }
 
-func init() {
-	initializers.LoadEnvVariables()
-}
-
 func main() {
 
-	//Db := initializers.ConnectToDB()
+	config.LoadEnv()
+	migrations.Migrate()
 
 	r := gin.Default()
-
-	r.POST("/post/create", controllers.PostCreate)
-	r.GET("/post/getAll", controllers.ReadPost)
-	r.PUT("/post/update/:id", controllers.UpdatePost)
-	r.DELETE("/post/delete/:id", controllers.DeletePost)
 
 	r.Run() // listen and serve on 0.0.0.0:8080
 }

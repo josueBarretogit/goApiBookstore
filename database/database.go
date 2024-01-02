@@ -3,7 +3,6 @@ package database
 import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
 	"os"
 )
 
@@ -13,15 +12,13 @@ type Db interface {
 	Disconnect()
 }
 
-func ConnectToDB() *gorm.DB {
+func ConnectToDB() (dbInstance *gorm.DB, err error) {
 	var error error
 
 	dsn := os.Getenv("DB_URI")
 	DB, error := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if error != nil {
-		log.Fatal("Failed to connect to db")
+		return nil, error
 	}
-	return DB
+	return DB, nil
 }
-
-var DB *gorm.DB = ConnectToDB()
