@@ -1,5 +1,4 @@
 package database
 
-type IDbRepository interface {
-	Find()
+type GORMDbRepository struct {
 }
