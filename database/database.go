@@ -13,21 +13,11 @@ type IDb interface {
 }
 
 type IRepository interface {
-	Find()
-	FindById(id uint)
-	Create(model interface{})
-	Update(id uint, model interface{})
-	Delete(model interface{}, where ...interface{})
+	Create(model interface{}) (error, interface{})
 }
 
-type DbRepositoryService struct {
+type GORMRepositoryService struct {
 	repository IRepository
-}
-
-func NewDbRepositoryService(repo IRepository) *DbRepositoryService {
-	return &DbRepositoryService{
-		repository: repo,
-	}
 }
 
 func ConnectToDB() (dbInstance *gorm.DB, err error) {

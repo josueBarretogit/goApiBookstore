@@ -42,7 +42,7 @@ type Account struct {
 
 type Role struct {
 	gorm.Model
-	Rolename string
+	Rolename string `json:"rolename"`
 }
 
 type Publisher struct {
