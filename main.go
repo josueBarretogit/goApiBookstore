@@ -4,7 +4,6 @@ import (
 	"api/bookstoreApi/config"
 	"api/bookstoreApi/controllers"
 	"api/bookstoreApi/database"
-	"api/bookstoreApi/database/migrations"
 	"errors"
 	"net/http"
 
@@ -66,11 +65,12 @@ func toggleTodoEstado(context *gin.Context) {
 func main() {
 
 	config.LoadEnv()
-	migrations.Migrate()
+	//migrations.Migrate()
 	roleController := controllers.NewRoleController(&database.GORMDbRepository{})
 
 	r := gin.Default()
 
 	r.POST("role/create", roleController.CreateRole)
-	r.Run() // listen and serve on 0.0.0.0:8080
+	r.GET("role/getall", roleController.FindAllRole)
+	r.Run()
 }

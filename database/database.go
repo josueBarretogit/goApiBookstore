@@ -13,6 +13,7 @@ type IDb interface {
 }
 
 type IRepository interface {
+	Find(model interface{}) error
 	Create(model interface{}) (error, interface{})
 }
 
@@ -29,5 +30,6 @@ func ConnectToDB() (dbInstance *gorm.DB, err error) {
 		return nil, error
 
 	}
+
 	return DB, nil
 }

@@ -105,4 +105,3 @@ func DeletePost(c *gin.Context) {
 	})
 
 }
-

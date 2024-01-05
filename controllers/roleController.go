@@ -36,3 +36,21 @@ func (roleController RoleController) CreateRole(c *gin.Context) {
 
 	return
 }
+
+func (roleController RoleController) FindAllRole(c *gin.Context) {
+	var roles []usermodels.Role
+
+	error := roleController.repoService.Find(&roles)
+
+	if error != nil {
+		c.JSON(400, gin.H{
+			"message": "An error ocurred when getting roles",
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"entities": roles,
+	})
+
+}
