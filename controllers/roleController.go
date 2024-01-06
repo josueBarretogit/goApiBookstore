@@ -18,26 +18,39 @@ func NewRoleController(repo database.IRepository) *RoleController {
 	}
 }
 
-func (roleController RoleController) CreateRole(c *gin.Context) {
+type roleCreateDto struct {
+	Rolename string `json:"rolename"`
+}
+
+func (roleController *RoleController) CreateRole(c *gin.Context) {
 	var role usermodels.Role
-	c.BindJSON(&role)
-	err, createdRole := roleController.repoService.Create(&role)
+	err := c.Bind(&role)
+	newRole := usermodels.Role{Rolename: role.Rolename}
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
+			"response": "received bad format",
+			"format":   role,
+		})
+		return
+	}
+	errCreation := roleController.repoService.Create(&role)
+	if errCreation != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "error creating role",
+			"error":   errCreation,
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "entity created successfully",
-		"entity":  createdRole,
+		"entity":  newRole,
 	})
 
 	return
 }
 
-func (roleController RoleController) FindAllRole(c *gin.Context) {
+func (roleController *RoleController) FindAllRole(c *gin.Context) {
 	var roles []usermodels.Role
 
 	error := roleController.repoService.Find(&roles)
@@ -53,4 +66,32 @@ func (roleController RoleController) FindAllRole(c *gin.Context) {
 		"entities": roles,
 	})
 
+}
+
+func (roleController *RoleController) UpdateRole(c *gin.Context) {
+	var role usermodels.Role
+	err := c.Bind(&role)
+	newRole := usermodels.Role{Rolename: role.Rolename}
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"response": "received bad format",
+			"format":   role,
+		})
+		return
+	}
+	errCreation := roleController.repoService.Create(&newRole)
+	if errCreation != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "error creating role",
+			"error":   errCreation,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "entity created successfully",
+		"entity":  newRole,
+	})
+
+	return
 }

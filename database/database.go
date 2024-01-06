@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-type IDb interface {
+type IDB interface {
 	Migrate()
 	Connect()
 	Disconnect()
@@ -14,22 +14,24 @@ type IDb interface {
 
 type IRepository interface {
 	Find(model interface{}) error
-	Create(model interface{}) (error, interface{})
+	Create(model interface{}) error
+	Update(modelToUpdate interface{}, id uint) error
 }
 
-type GORMRepositoryService struct {
-	repository IRepository
+type Database struct {
+	Db IDB
 }
 
-func ConnectToDB() (dbInstance *gorm.DB, err error) {
+var DB *gorm.DB
+
+func ConnectToDB() (err error) {
 	var error error
 
 	dsn := os.Getenv("DB_URI")
-	DB, error := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	DB, error = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if error != nil {
-		return nil, error
-
+		return error
 	}
 
-	return DB, nil
+	return nil
 }

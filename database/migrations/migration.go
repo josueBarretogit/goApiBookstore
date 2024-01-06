@@ -1,7 +1,7 @@
 package migrations
 
 import (
-	"api/bookstoreApi/database"
+	database "api/bookstoreApi/database"
 	bookmodels "api/bookstoreApi/models/bookModels"
 	paymentmodels "api/bookstoreApi/models/paymentModels"
 	usermodels "api/bookstoreApi/models/userModels"
@@ -9,11 +9,11 @@ import (
 )
 
 func Migrate() {
-	DB, error := database.ConnectToDB()
+	error := database.ConnectToDB()
 	if error != nil {
 		log.Fatal("Something happened when migrating")
 	}
-	DB.AutoMigrate(
+	database.DB.AutoMigrate(
 		&usermodels.Role{},
 		&usermodels.Account{},
 		&usermodels.Customer{},

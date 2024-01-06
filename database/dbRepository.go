@@ -2,22 +2,17 @@ package database
 
 type GORMDbRepository struct{}
 
-func (gormRepo GORMDbRepository) Create(model interface{}) (err error, createModel interface{}) {
-
-	dbInstance, err := ConnectToDB()
-	if err != nil {
-		return err, nil
-	}
-
-	return nil, dbInstance.Create(&model)
+func (gormRepo *GORMDbRepository) Create(model interface{}) (err error) {
+	errCreation := DB.Create(model)
+	return errCreation.Error
 }
 
-func (gormRepo GORMDbRepository) Find(model interface{}) (err error) {
+func (gormRepo *GORMDbRepository) Find(model interface{}) (err error) {
+	findErr := DB.Find(model)
+	return findErr.Error
+}
 
-	dbInstance, err := ConnectToDB()
-	if err != nil {
-		return err
-	}
-	dbInstance.Find(model)
-	return nil
+func (gormRepo *GORMDbRepository) Update(dataToUpdate interface{}, id uint) (err error) {
+	errCreation := DB.Update(dataToUpdate, id)
+	return errCreation.Error
 }
