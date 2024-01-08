@@ -16,6 +16,7 @@ type IRepository interface {
 	Find(model interface{}) error
 	Create(model interface{}) error
 	Update(modelToUpdate interface{}, id uint) error
+	FindOneBy(modelToFind interface{}, id uint) error
 }
 
 type Database struct {

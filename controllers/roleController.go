@@ -25,7 +25,6 @@ type roleCreateDto struct {
 func (roleController *RoleController) CreateRole(c *gin.Context) {
 	var role usermodels.Role
 	err := c.Bind(&role)
-	newRole := usermodels.Role{Rolename: role.Rolename}
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"response": "received bad format",
@@ -44,7 +43,7 @@ func (roleController *RoleController) CreateRole(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "entity created successfully",
-		"entity":  newRole,
+		"entity":  role,
 	})
 
 	return
@@ -71,6 +70,7 @@ func (roleController *RoleController) FindAllRole(c *gin.Context) {
 func (roleController *RoleController) UpdateRole(c *gin.Context) {
 	var role usermodels.Role
 	err := c.Bind(&role)
+	id := c.Param("id")
 	newRole := usermodels.Role{Rolename: role.Rolename}
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{

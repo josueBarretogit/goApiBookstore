@@ -12,7 +12,12 @@ func (gormRepo *GORMDbRepository) Find(model interface{}) (err error) {
 	return findErr.Error
 }
 
-func (gormRepo *GORMDbRepository) Update(dataToUpdate interface{}, id uint) (err error) {
-	errCreation := DB.Update(dataToUpdate, id)
-	return errCreation.Error
+func (gormRepo *GORMDbRepository) FindOneBy(modelToFind interface{}, term ...interface{}) error {
+	findErr := DB.First(modelToFind, term)
+	return findErr.Error
+}
+
+func (gormRepo *GORMDbRepository) Update(modelToUpdate interface{}, id uint) (err error) {
+	errUpdate := DB.Model(modelToUpdate).Updates(modelToUpdate)
+	return errUpdate.Error
 }
