@@ -21,7 +21,10 @@ func main() {
 	r := gin.Default()
 
 	r.POST("role/save", roleController.CreateRole)
-	r.PUT("role/update", roleController.UpdateRole)
+	r.PUT("role/update/:id", roleController.UpdateRole)
+	r.DELETE("role/delete/:id", roleController.DeleteRole)
 	r.GET("role/findall", roleController.FindAllRole)
+	r.GET("role/findby/:id", roleController.FindBy)
+
 	r.Run()
 }

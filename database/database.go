@@ -15,8 +15,9 @@ type IDB interface {
 type IRepository interface {
 	Find(model interface{}) error
 	Create(model interface{}) error
-	Update(modelToUpdate interface{}, id uint) error
-	FindOneBy(modelToFind interface{}, id uint) error
+	Update(modelToUpdate interface{}, data interface{}) error
+	FindOneBy(modelToFind interface{}, conditions ...interface{}) error
+	Delete(modelToDelete interface{}, conditions ...interface{}) error
 }
 
 type Database struct {
