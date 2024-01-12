@@ -1,10 +1,20 @@
 package routes
 
-type IServer interface {
-	Get(route string)
-}
+import (
+	"api/bookstoreApi/controllers"
 
-func SetupRoutes(server IServer) {
+	"github.com/gin-gonic/gin"
+)
 
-	server.Get("/get")
+func SetupRoutes(model string, controller controllers.IController, router *gin.Engine) {
+
+	group := router.Group(model)
+	{
+		group.GET("/findall", controller.FindAll)
+		group.GET("/findby/:id", controller.FindOneBy)
+		group.POST("/save", controller.Create)
+		group.PUT("/update", controller.Update)
+		group.DELETE("/delete", controller.Delete)
+	}
+
 }

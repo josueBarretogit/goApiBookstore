@@ -4,6 +4,8 @@ import (
 	"api/bookstoreApi/config"
 	"api/bookstoreApi/controllers"
 	"api/bookstoreApi/database"
+	"api/bookstoreApi/server/routes"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,12 +21,8 @@ func main() {
 	roleController := controllers.NewRoleController(&database.GORMDbRepository{})
 
 	r := gin.Default()
-
-	r.POST("role/save", roleController.CreateRole)
-	r.PUT("role/update/:id", roleController.UpdateRole)
-	r.DELETE("role/delete/:id", roleController.DeleteRole)
-	r.GET("role/findall", roleController.FindAllRole)
-	r.GET("role/findby/:id", roleController.FindBy)
+	routes.SetupRoutes("role", roleController, r)
+	routes.SetupRoutes("account", roleController, r)
 
 	r.Run()
 }

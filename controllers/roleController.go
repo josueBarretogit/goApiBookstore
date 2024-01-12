@@ -18,7 +18,7 @@ func NewRoleController(databaseRepository database.IRepository) *RoleController 
 	}
 }
 
-func (roleController *RoleController) CreateRole(c *gin.Context) {
+func (roleController *RoleController) Create(c *gin.Context) {
 	var role usermodels.Role
 	err := c.Bind(&role)
 
@@ -47,7 +47,7 @@ func (roleController *RoleController) CreateRole(c *gin.Context) {
 	return
 }
 
-func (roleController *RoleController) FindAllRole(c *gin.Context) {
+func (roleController *RoleController) FindAll(c *gin.Context) {
 	var roles []usermodels.Role
 
 	error := roleController.repositoryService.Find(&roles)
@@ -65,7 +65,7 @@ func (roleController *RoleController) FindAllRole(c *gin.Context) {
 
 }
 
-func (roleController *RoleController) FindBy(c *gin.Context) {
+func (roleController *RoleController) FindOneBy(c *gin.Context) {
 	var role usermodels.Role
 
 	id := c.Param("id")
@@ -85,7 +85,7 @@ func (roleController *RoleController) FindBy(c *gin.Context) {
 
 }
 
-func (roleController *RoleController) UpdateRole(c *gin.Context) {
+func (roleController *RoleController) Update(c *gin.Context) {
 	var roleData usermodels.Role
 	var roleToUpdate usermodels.Role
 
@@ -127,7 +127,7 @@ func (roleController *RoleController) UpdateRole(c *gin.Context) {
 	return
 }
 
-func (roleController *RoleController) DeleteRole(c *gin.Context) {
+func (roleController *RoleController) Delete(c *gin.Context) {
 
 	id := c.Param("id")
 	var roleToDelete usermodels.Role
