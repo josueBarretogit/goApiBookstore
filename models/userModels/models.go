@@ -47,7 +47,7 @@ type Role struct {
 
 type Publisher struct {
 	gorm.Model
-	PublisherName   string
+	PublisherName   string `json:"publisherName" binding:"required"`
 	PublisherAuthor []PublisherAuthor
 }
 

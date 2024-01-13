@@ -10,11 +10,13 @@ import (
 
 type RoleController struct {
 	repositoryService database.IRepository
+	model             interface{}
 }
 
-func NewRoleController(databaseRepository database.IRepository) *RoleController {
+func NewRoleController(databaseRepository database.IRepository, model interface{}) *RoleController {
 	return &RoleController{
 		repositoryService: databaseRepository,
+		model:             model,
 	}
 }
 
@@ -48,9 +50,8 @@ func (roleController *RoleController) Create(c *gin.Context) {
 }
 
 func (roleController *RoleController) FindAll(c *gin.Context) {
-	var roles []usermodels.Role
 
-	error := roleController.repositoryService.Find(&roles)
+	error := roleController.repositoryService.Find(&roleController.model)
 
 	if error != nil {
 		c.JSON(400, gin.H{
@@ -60,7 +61,7 @@ func (roleController *RoleController) FindAll(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"entities": roles,
+		"entities": roleController.model,
 	})
 
 }
