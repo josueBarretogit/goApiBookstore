@@ -10,29 +10,29 @@ import (
 
 type RoleController struct {
 	repositoryService database.IRepository
-	model             interface{}
+	Model             interface{}
 }
 
 func NewRoleController(databaseRepository database.IRepository, model interface{}) *RoleController {
 	return &RoleController{
 		repositoryService: databaseRepository,
-		model:             model,
+		Model:             model,
 	}
 }
 
 func (roleController *RoleController) Create(c *gin.Context) {
-	var role usermodels.Role
-	err := c.Bind(&role)
+
+	err := c.Bind(&roleController.Model)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"response": "received bad format",
-			"format":   role,
+			"format":   &roleController.Model,
 		})
 		return
 	}
 
-	errCreation := roleController.repositoryService.Create(&role)
+	errCreation := roleController.repositoryService.Create(&roleController.Model)
 	if errCreation != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "error creating role",
@@ -43,7 +43,7 @@ func (roleController *RoleController) Create(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "entity created successfully",
-		"entity":  role,
+		"entity":  &roleController.Model,
 	})
 
 	return
@@ -51,7 +51,9 @@ func (roleController *RoleController) Create(c *gin.Context) {
 
 func (roleController *RoleController) FindAll(c *gin.Context) {
 
-	error := roleController.repositoryService.Find(&roleController.model)
+	//var models role
+
+	error := roleController.repositoryService.Find(&roleController.Model)
 
 	if error != nil {
 		c.JSON(400, gin.H{
@@ -61,7 +63,7 @@ func (roleController *RoleController) FindAll(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"entities": roleController.model,
+		"entities": roleController.Model,
 	})
 
 }

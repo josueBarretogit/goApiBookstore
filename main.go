@@ -19,9 +19,9 @@ func main() {
 		panic("Couldnt connect to db")
 	}
 
-	var roles []usermodels.Role
-	var publishers []usermodels.Publisher
-	roleController := controllers.NewRoleController(&database.GORMDbRepository{}, roles)
+	var role usermodels.Role
+	var publishers usermodels.Publisher
+	roleController := controllers.NewRoleController(&database.GORMDbRepository{}, role)
 	publisherController := controllers.NewRoleController(&database.GORMDbRepository{}, publishers)
 
 	r := gin.Default()
