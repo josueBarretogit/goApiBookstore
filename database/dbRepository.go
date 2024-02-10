@@ -1,9 +1,11 @@
 package database
 
-type GORMDbRepository struct{}
+type GORMDbRepository struct{
+
+}
 
 func (gormRepo *GORMDbRepository) Create(model interface{}) (err error) {
-	errCreation := DB.Create(model)
+	errCreation := DB.Create(&model)
 	return errCreation.Error
 }
 

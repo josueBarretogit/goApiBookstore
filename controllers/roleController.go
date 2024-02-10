@@ -21,9 +21,8 @@ func NewRoleController(databaseRepository database.IRepository, model interface{
 }
 
 func (roleController *RoleController) Create(c *gin.Context) {
-
-	err := c.Bind(&roleController.Model)
-
+	var role usermodels.Role
+	err := c.BindJSON(&role)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"response": "received bad format",
@@ -31,9 +30,12 @@ func (roleController *RoleController) Create(c *gin.Context) {
 		})
 		return
 	}
+	newRole := usermodels.Role{
+		Rolename: role.Rolename,
+	}
 
-	errCreation := roleController.repositoryService.Create(&roleController.Model)
-	if errCreation != nil {
+	errCreation := database.DB.Create(&newRole)
+	if errCreation.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "error creating role",
 			"error":   errCreation,
@@ -50,9 +52,6 @@ func (roleController *RoleController) Create(c *gin.Context) {
 }
 
 func (roleController *RoleController) FindAll(c *gin.Context) {
-
-	//var models role
-
 	error := roleController.repositoryService.Find(&roleController.Model)
 
 	if error != nil {
@@ -65,7 +64,6 @@ func (roleController *RoleController) FindAll(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"entities": roleController.Model,
 	})
-
 }
 
 func (roleController *RoleController) FindOneBy(c *gin.Context) {
@@ -85,7 +83,6 @@ func (roleController *RoleController) FindOneBy(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"entity": role,
 	})
-
 }
 
 func (roleController *RoleController) Update(c *gin.Context) {
@@ -93,7 +90,6 @@ func (roleController *RoleController) Update(c *gin.Context) {
 	var roleToUpdate usermodels.Role
 
 	err := c.Bind(&roleData)
-
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"response":   "Received bad json format",
@@ -131,7 +127,6 @@ func (roleController *RoleController) Update(c *gin.Context) {
 }
 
 func (roleController *RoleController) Delete(c *gin.Context) {
-
 	id := c.Param("id")
 	var roleToDelete usermodels.Role
 

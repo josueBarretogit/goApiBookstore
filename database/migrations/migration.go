@@ -2,6 +2,7 @@ package migrations
 
 import (
 	database "api/bookstoreApi/database"
+	"api/bookstoreApi/models"
 	bookmodels "api/bookstoreApi/models/bookModels"
 	paymentmodels "api/bookstoreApi/models/paymentModels"
 	usermodels "api/bookstoreApi/models/userModels"
@@ -30,6 +31,17 @@ func Migrate() {
 		&paymentmodels.PurchaseDetails{},
 		&paymentmodels.CreditCard{},
 		&paymentmodels.BankAccount{},
+	)
+
+}
+
+func MigrateTest() {
+	error := database.ConnectToDB()
+	if error != nil {
+		log.Fatal("Something happened when migrating")
+	}
+	database.DB.AutoMigrate(
+    &models.Prueba{},
 	)
 
 }

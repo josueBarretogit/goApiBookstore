@@ -1,8 +1,14 @@
 package models
 
-import "api/bookstoreApi/controllers"
+import (
 
-type ModelType struct {
-	name       string
-	controller controllers.IController
+	"gorm.io/gorm"
+)
+
+
+
+
+type Prueba struct {
+  gorm.Model
+	Prueba string `json:"prueba" binding:"required"`
 }

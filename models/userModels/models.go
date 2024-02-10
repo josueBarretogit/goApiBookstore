@@ -42,6 +42,7 @@ type Account struct {
 
 type Role struct {
 	gorm.Model
+	ID       int    `gorm:"AUTO_INCREMENT"`
 	Rolename string `json:"rolename" binding:"required"`
 }
 

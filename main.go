@@ -4,29 +4,26 @@ import (
 	"api/bookstoreApi/config"
 	"api/bookstoreApi/controllers"
 	"api/bookstoreApi/database"
-	usermodels "api/bookstoreApi/models/userModels"
-	"api/bookstoreApi/server/routes"
+	"api/bookstoreApi/models"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-
 	config.LoadEnv()
+
 	dbErr := database.ConnectToDB()
 
 	if dbErr != nil {
 		panic("Couldnt connect to db")
 	}
 
-	var role usermodels.Role
-	var publishers usermodels.Publisher
-	roleController := controllers.NewRoleController(&database.GORMDbRepository{}, role)
-	publisherController := controllers.NewRoleController(&database.GORMDbRepository{}, publishers)
+
 
 	r := gin.Default()
-	routes.SetupRoutes("role", roleController, r)
-	routes.SetupRoutes("publisher", publisherController, r)
+	r.POST("prueba/save", controllers.TestCreate[models.Prueba](models.Prueba{}))
+	r.GET("prueba/findall", controllers.TestList[models.Prueba](models.Prueba{}))
+
 
 	r.Run()
 }
