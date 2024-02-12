@@ -15,7 +15,7 @@ type PruebaController [T any]  struct {
 }
 
 
-func TestCreate [T any](modelType T) gin.HandlerFunc {
+func TestCreate [T any]() gin.HandlerFunc {
   return func(c *gin.Context) {
     var model T
     c.BindJSON(&model)
@@ -32,7 +32,7 @@ func TestCreate [T any](modelType T) gin.HandlerFunc {
   }
 }
 
-func TestList[T any](modelType T) gin.HandlerFunc {
+func TestList[T any]() gin.HandlerFunc {
   return func(c *gin.Context) {
     var pruebas []T
     err := database.DB.Find(&pruebas)
@@ -42,7 +42,7 @@ func TestList[T any](modelType T) gin.HandlerFunc {
       }) 
       return
     } 
-    c.JSON(http.StatusBadRequest, gin.H{
+    c.JSON(http.StatusOK, gin.H{
       "pruebas" : pruebas,
     }) 
     return

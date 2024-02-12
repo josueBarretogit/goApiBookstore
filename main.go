@@ -5,6 +5,8 @@ import (
 	"api/bookstoreApi/controllers"
 	"api/bookstoreApi/database"
 	"api/bookstoreApi/models"
+	usermodels "api/bookstoreApi/models/userModels"
+	"api/bookstoreApi/server/routes"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,11 +20,16 @@ func main() {
 		panic("Couldnt connect to db")
 	}
 
+  pruebaController := &controllers.GenericController[models.Prueba]{}
+  roleController := &controllers.GenericController[usermodels.Role]{}
+  publisherController := &controllers.PublisherController{}
 
 
 	r := gin.Default()
-	r.POST("prueba/save", controllers.TestCreate[models.Prueba](models.Prueba{}))
-	r.GET("prueba/findall", controllers.TestList[models.Prueba](models.Prueba{}))
+  routes.SetupRoutes("role", roleController, r)
+  routes.SetupRoutes("publisher", publisherController, r)
+  routes.SetupRoutes("prueba", pruebaController, r)
+
 
 
 	r.Run()

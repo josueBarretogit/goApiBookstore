@@ -10,11 +10,11 @@ func SetupRoutes(model string, controller controllers.IController, router *gin.E
 
 	group := router.Group(model)
 	{
-		group.GET("/findall", controller.FindAll)
-		group.GET("/findby/:id", controller.FindOneBy)
-		group.POST("/save", controller.Create)
-		group.PUT("/update", controller.Update)
-		group.DELETE("/delete", controller.Delete)
+		group.GET("/findall", controller.FindAll())
+		group.GET("/findby/:id", controller.FindOneBy())
+		group.POST("/save", controller.Create())
+		group.PUT("/update", controller.Update())
+		group.DELETE("/delete", controller.Delete())
 	}
 
 }
