@@ -7,13 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type GenericController[T any] struct {
-}
+
+type GenericController[T interface{}] struct {}
 
 
 func (controller *GenericController[T]) Create() gin.HandlerFunc {
   return func(c *gin.Context) {
-    var model T
+    var model T    
     c.BindJSON(&model)
     err := database.DB.Create(&model)
     if err.Error != nil {
@@ -49,6 +49,26 @@ func (controller *GenericController[T]) FindAll() gin.HandlerFunc {
 
 func (controller *GenericController[T]) FindOneBy() gin.HandlerFunc { 
   return func(c *gin.Context) {
+    var model T 
+
+    id := c.Params.ByName("id")
+
+    err := database.DB.Limit(1).Find(&model, id)
+    if err.Error != nil {
+      c.JSON(http.StatusBadRequest, gin.H{
+        "dbError" : err.Error,
+      }) 
+      return
+    }
+    if &model == nil {
+      c.JSON(http.StatusBadRequest, gin.H{
+        "message" : "That model does not exist",
+      }) 
+      return
+    }
+    c.JSON(http.StatusOK, gin.H{
+      "model" : model,
+    })
   }
 }
 
@@ -56,20 +76,19 @@ func (controller *GenericController[T]) FindOneBy() gin.HandlerFunc {
 
 func (controller *GenericController[T]) Update() gin.HandlerFunc { 
   return func(c *gin.Context) {
-
     var modelToUpdate T
     var modelData T
 
     id := c.Params.ByName("id")
-    err := database.DB.First(&modelData, id)
+    err := database.DB.First(&modelToUpdate, id)
     if err.Error != nil {
       c.JSON(http.StatusBadRequest, gin.H{
         "dbError" : err.Error,
       }) 
       return
     }
-    c.BindJSON(&modelToUpdate)
-    err = database.DB.Model(&modelData).Updates(*&modelToUpdate)
+    c.BindJSON(&modelData)
+    err = database.DB.Model(&modelToUpdate).Updates(&modelData)
     if err.Error != nil {
       c.JSON(http.StatusBadRequest, gin.H{
         "dbError" : err.Error,
@@ -87,5 +106,27 @@ func (controller *GenericController[T]) Update() gin.HandlerFunc {
 
 func (controller *GenericController[T]) Delete() gin.HandlerFunc { 
   return func(c *gin.Context) {
+
+    var modelToDelete T
+    id := c.Params.ByName("id")
+    err := database.DB.First(&modelToDelete, id)
+    if err.Error != nil {
+      c.JSON(http.StatusBadRequest, gin.H{
+        "dbError" : err.Error,
+      }) 
+      return
+    }
+    err = database.DB.Delete(&modelToDelete)
+    if err.Error != nil {
+      c.JSON(http.StatusBadRequest, gin.H{
+        "dbError" : err.Error,
+      }) 
+      return
+    } 
+    c.JSON(http.StatusOK, gin.H{
+      "deleted" : modelToDelete,
+    }) 
+    return
+
   }
 }
