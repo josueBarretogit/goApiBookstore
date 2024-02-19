@@ -1,60 +1,58 @@
 package usermodels
 
 import (
-	bookmodels "api/bookstoreApi/models/bookModels"
-	paymentmodels "api/bookstoreApi/models/paymentModels"
-
 	"gorm.io/gorm"
 )
 
 type Author struct {
 	gorm.Model
-	Name              string
-	Lastname          string
-	About             string
-	ProfilePictureUrl string
-	AccountID         uint
-	Account           Account
-	PublisherAuthor   []PublisherAuthor
-	Book              []bookmodels.Book
+	Name              string            `json:"name" `
+	Lastname          string            `json:"lastname" `
+	About             string            `json:"about" `
+	ProfilePictureUrl string            `json:"profilePictureUrl" `
+	AccountID         uint              `json:"accountid" `
+	Account           Account           `json:"account" `
+	PublisherAuthor   []PublisherAuthor `json:"publishers" `
 }
 
 type Customer struct {
 	gorm.Model
-	Name              string
-	Lastname          string
-	Document          string
-	Address           string
-	PhoneNumber       string
-	ProfilePictureUrl string
-	AccountID         uint
-	Account           Account
-	Purchases         []paymentmodels.Purchase
-}
-
-type Account struct {
-	gorm.Model
-	Username string
-	Password string
-	RoleID   uint
-	Role     Role
+	Name              string  `json:"name,omitempty"`
+	Document          string  `json:"document,omitempty"`
+	Address           string  `json:"address,omitempty"`
+	PhoneNumber       string  `json:"phone_number,omitempty"`
+	ProfilePictureUrl string  `json:"profile_picture_url,omitempty"`
+	AccountID         uint    `json:"accountid" `
+	Account           Account `json:"account" `
 }
 
 type Role struct {
 	gorm.Model
-	ID       int    `gorm:"AUTO_INCREMENT"`
-	Rolename string `json:"rolename" binding:"required"`
+	Rolename string `json:"rolename" `
+	Accounts []RoleAccount
+}
+
+type Account struct {
+	gorm.Model
+	Username string `json:"username" `
+	Password string `json:"password" `
+	Roles    []RoleAccount
+}
+
+type RoleAccount struct {
+	gorm.Model
+	RoleId    uint `json:"role_id" `
+	AccountId uint `json:"account_id" `
 }
 
 type Publisher struct {
 	gorm.Model
-	PublisherName   string `json:"publisherName" binding:"required"`
+	PublisherName   string `json:"publisherName" `
 	PublisherAuthor []PublisherAuthor
 }
 
 type PublisherAuthor struct {
 	gorm.Model
-	PublisherName string
-	PublisherID   uint
-	AuthorID      uint
+	PublisherID uint `json:"publisher_id,omitempty"`
+	AuthorID    uint `json:"author_id,omitempty"`
 }

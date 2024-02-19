@@ -18,14 +18,17 @@ func main() {
 		panic("Couldnt connect to db")
 	}
 
-  roleController := &controllers.RoleController{}
-  publisherController := &controllers.PublisherController{}
-  accountController := &controllers.PublisherController{}
-
+	roleController := &controllers.RoleController{}
+	accountController := &controllers.AccountController{}
+	publisherController := &controllers.PublisherController{}
+	authorController := &controllers.AuthorController{}
 
 	r := gin.Default()
-  routes.SetupRoutes("role", roleController, r)
-  routes.SetupRoutes("publisher", publisherController, r)
+
+	routes.SetupRoutes("role", roleController, r)
+	routes.SetupRoutes("publisher", publisherController, r)
+	routes.SetupRoutes("account", accountController, r)
+	routes.SetupRoutes("author", authorController, r)
 
 	r.Run()
 }
