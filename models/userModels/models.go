@@ -29,21 +29,16 @@ type Customer struct {
 type Role struct {
 	gorm.Model
 	Rolename string `json:"rolename" `
-	Accounts []RoleAccount
+	Accounts []*Account `gorm:"many2many:role_accounts;"`
 }
 
 type Account struct {
 	gorm.Model
 	Username string `json:"username" `
 	Password string `json:"password" `
-	Roles    []RoleAccount
+	Roles []*Role `gorm:"many2many:role_accounts;"`
 }
 
-type RoleAccount struct {
-	gorm.Model
-	RoleId    uint `json:"role_id" `
-	AccountId uint `json:"account_id" `
-}
 
 type Publisher struct {
 	gorm.Model

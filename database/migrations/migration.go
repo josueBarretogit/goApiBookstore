@@ -19,7 +19,6 @@ func Migrate() {
 		usermodels.Customer{},
 		usermodels.Publisher{},
 		usermodels.PublisherAuthor{},
-		usermodels.RoleAccount{},
 	)
 }
 

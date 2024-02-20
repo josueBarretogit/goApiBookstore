@@ -33,3 +33,4 @@ type AuthorController struct {
 type CustomerController struct {
 	GenericController[usermodels.Customer]
 }
+

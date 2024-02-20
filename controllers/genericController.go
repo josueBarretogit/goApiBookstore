@@ -8,7 +8,9 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type GenericController[T interface{}] struct{}
+type GenericController[T interface{}] struct{
+	RelationName string
+}
 
 func (controller *GenericController[T]) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -42,7 +44,7 @@ func (controller *GenericController[T]) Create() gin.HandlerFunc {
 func (controller *GenericController[T]) FindAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var models []T
-		err := database.DB.Preload(clause.Associations).Find(&models)
+		err := database.DB.Preload(clause.Associations).Order("ID desc").Find(&models)
 		if err.Error != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"dbError": err.Error,
@@ -62,7 +64,7 @@ func (controller *GenericController[T]) FindOneBy() gin.HandlerFunc {
 
 		id := c.Params.ByName("id")
 
-		err := database.DB.Limit(1).Find(&model, id)
+		err := database.DB.Limit(1).Preload(clause.Associations).Find(&model, id)
 		if err.Error != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"dbError": err.Error,
@@ -133,3 +135,33 @@ func (controller *GenericController[T]) Delete() gin.HandlerFunc {
 		return
 	}
 }
+
+func (controller *GenericController[T]) AssignManyToManyRelation() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var modelToUpdate T
+		var modelData T
+
+		id := c.Params.ByName("id")
+		err := database.DB.First(&modelToUpdate, id)
+		if err.Error != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"dbError": err.Error,
+			})
+			return
+		}
+		c.BindJSON(&modelData)
+		err = database.DB.Model(&modelToUpdate).Association(controller.RelationName).Replace([]T{modelData})
+		if err.Error != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"dbError": err.Error,
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"updated": modelToUpdate,
+		})
+		return
+	}
+}
+
+
