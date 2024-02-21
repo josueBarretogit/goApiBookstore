@@ -15,6 +15,7 @@ func SetupRoutes(model string, controller controllers.IController, router *gin.E
 		group.POST("/save", controller.Create())
     group.PUT("/update/:id", controller.Update())
     group.DELETE("/delete/:id", controller.Delete())
+    group.PUT("/AssignManyToManyRelation/:id", controller.AssignManyToManyRelation())
 	}
 
 }

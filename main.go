@@ -4,7 +4,7 @@ import (
 	"api/bookstoreApi/config"
 	"api/bookstoreApi/controllers"
 	"api/bookstoreApi/database"
-	"api/bookstoreApi/database/migrations"
+	usermodels "api/bookstoreApi/models/userModels"
 	"api/bookstoreApi/server/routes"
 
 	"github.com/gin-gonic/gin"
@@ -19,10 +19,15 @@ func main() {
 		panic("Couldnt connect to db")
 	}
 
-	migrations.Migrate()
+	accountGenericController := controllers.GenericController[usermodels.Account, usermodels.Role]{
+		RelationName: "Roles",
+	}
+
+	accountController := &controllers.AccountController{
+		GenericController: accountGenericController,
+	}
 
 	roleController := &controllers.RoleController{}
-	accountController := &controllers.AccountController{}
 	publisherController := &controllers.PublisherController{}
 	authorController := &controllers.AuthorController{}
 	customerController := &controllers.CustomerController{}

@@ -12,25 +12,25 @@ type IController interface {
 	Update() gin.HandlerFunc
 	FindOneBy() gin.HandlerFunc
 	Delete() gin.HandlerFunc
+	AssignManyToManyRelation() gin.HandlerFunc
 }
 
 type PublisherController struct {
-	GenericController[usermodels.Publisher]
+	GenericController[usermodels.Publisher, usermodels.Account]
 }
 
 type RoleController struct {
-	GenericController[usermodels.Role]
+	GenericController[usermodels.Role, usermodels.Account]
 }
 
 type AccountController struct {
-	GenericController[usermodels.Account]
+	GenericController[usermodels.Account, usermodels.Role]
 }
 
 type AuthorController struct {
-	GenericController[usermodels.Author]
+	GenericController[usermodels.Author, usermodels.Account]
 }
 
 type CustomerController struct {
-	GenericController[usermodels.Customer]
+	GenericController[usermodels.Customer, usermodels.Account]
 }
-
