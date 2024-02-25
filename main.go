@@ -19,7 +19,7 @@ func main() {
 		panic("Couldnt connect to db")
 	}
 
-	accountGenericController := controllers.GenericController[usermodels.Account, usermodels.Role]{
+	accountGenericController := controllers.GenericController[usermodels.Account]{
 		RelationName: "Roles",
 	}
 
@@ -40,5 +40,6 @@ func main() {
 	routes.SetupRoutes("author", authorController, r)
 	routes.SetupRoutes("customer", customerController, r)
 
+	r.PUT("account/AssignManyToManyRelation/:id", controllers.AssignManyToManyRelation[usermodels.Account, usermodels.Role]("Roles"))
 	r.Run()
 }

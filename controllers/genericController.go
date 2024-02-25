@@ -8,11 +8,11 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type GenericController[T interface{}, K interface{}] struct {
+type GenericController[T interface{}] struct {
 	RelationName string
 }
 
-func (controller *GenericController[T, K]) Create() gin.HandlerFunc {
+func (controller *GenericController[T]) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var model T
 
@@ -41,7 +41,7 @@ func (controller *GenericController[T, K]) Create() gin.HandlerFunc {
 	}
 }
 
-func (controller *GenericController[T, K]) FindAll() gin.HandlerFunc {
+func (controller *GenericController[T]) FindAll() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var models []T
 		err := database.DB.Preload(clause.Associations).Order("ID desc").Find(&models)
@@ -58,7 +58,7 @@ func (controller *GenericController[T, K]) FindAll() gin.HandlerFunc {
 	}
 }
 
-func (controller *GenericController[T, K]) FindOneBy() gin.HandlerFunc {
+func (controller *GenericController[T]) FindOneBy() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var model T
 
@@ -84,7 +84,7 @@ func (controller *GenericController[T, K]) FindOneBy() gin.HandlerFunc {
 	}
 }
 
-func (controller *GenericController[T, K]) Update() gin.HandlerFunc {
+func (controller *GenericController[T]) Update() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var modelToUpdate T
 		var modelData T
@@ -112,7 +112,7 @@ func (controller *GenericController[T, K]) Update() gin.HandlerFunc {
 	}
 }
 
-func (controller *GenericController[T, K]) Delete() gin.HandlerFunc {
+func (controller *GenericController[T]) Delete() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var modelToDelete T
 		id := c.Params.ByName("id")
@@ -137,30 +137,4 @@ func (controller *GenericController[T, K]) Delete() gin.HandlerFunc {
 	}
 }
 
-func (controller *GenericController[T, K]) AssignManyToManyRelation() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var modelToUpdate T
-		var modelData K
 
-		id := c.Params.ByName("id")
-		err := database.DB.First(&modelToUpdate, id)
-		if err.Error != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"dbError": err.Error,
-			})
-			return
-		}
-		c.BindJSON(&modelData)
-		errDatabase := database.DB.Model(&modelToUpdate).Association(controller.RelationName).Append(&modelData)
-		if err.Error != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"dbError": errDatabase.Error,
-			})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{
-			"updated": modelData,
-		})
-		return
-	}
-}
