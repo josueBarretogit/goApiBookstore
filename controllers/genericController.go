@@ -12,6 +12,13 @@ type GenericController[T interface{}] struct {
 	RelationName string
 }
 
+
+func NewGenericController[T interface{}](relation string) *GenericController[T] {
+	return &GenericController[T]{
+		RelationName: relation,
+	}
+}
+
 func (controller *GenericController[T]) Create() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var model T
@@ -26,7 +33,7 @@ func (controller *GenericController[T]) Create() gin.HandlerFunc {
 			return
 		}
 
-		err := database.DB.Create(&model)
+		err := database.DB.Omit("Account").Create(&model)
 		if err.Error != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"dbError": err.Error,

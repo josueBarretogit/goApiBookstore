@@ -4,7 +4,6 @@ import (
 	"api/bookstoreApi/config"
 	"api/bookstoreApi/controllers"
 	"api/bookstoreApi/database"
-	usermodels "api/bookstoreApi/models/userModels"
 	"api/bookstoreApi/server/routes"
 
 	"github.com/gin-gonic/gin"
@@ -19,18 +18,12 @@ func main() {
 		panic("Couldnt connect to db")
 	}
 
-	accountGenericController := controllers.GenericController[usermodels.Account]{
-		RelationName: "Roles",
-	}
 
-	accountController := &controllers.AccountController{
-		GenericController: accountGenericController,
-	}
-
-	roleController := &controllers.RoleController{}
-	publisherController := &controllers.PublisherController{}
-	authorController := &controllers.AuthorController{}
-	customerController := &controllers.CustomerController{}
+	accountController := controllers.NewAccountController()
+	roleController := controllers.NewRoleController()
+	publisherController := controllers.NewPublisherController()
+	authorController := controllers.NewAuthorController()
+	customerController := controllers.NewCustomerController()
 
 	r := gin.Default()
 
@@ -40,6 +33,6 @@ func main() {
 	routes.SetupRoutes("author", authorController, r)
 	routes.SetupRoutes("customer", customerController, r)
 
-	r.PUT("account/AssignManyToManyRelation/:id", controllers.AssignManyToManyRelation[usermodels.Account, usermodels.Role]("Roles"))
+	r.PUT("account/AssignManyToManyRelation/:id", accountController.AssignRole())
 	r.Run()
 }

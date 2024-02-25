@@ -11,8 +11,8 @@ type Author struct {
 	About             string            `json:"about" `
 	ProfilePictureUrl string            `json:"profilePictureUrl" `
 	AccountID         uint              `json:"accountid" `
-	Account           Account           `json:"account" `
-	PublisherAuthor   []PublisherAuthor `json:"publishers" `
+	Account           Account           `json:"account"`
+	Publishers []*Publisher `gorm:"many2many:author_publisher;" `
 }
 
 type Customer struct {
@@ -43,11 +43,6 @@ type Account struct {
 type Publisher struct {
 	gorm.Model
 	PublisherName   string `json:"publisherName" `
-	PublisherAuthor []PublisherAuthor
+	Authors []*Author `gorm:"many2many:author_publisher;" `
 }
 
-type PublisherAuthor struct {
-	gorm.Model
-	PublisherID uint `json:"publisher_id,omitempty"`
-	AuthorID    uint `json:"author_id,omitempty"`
-}

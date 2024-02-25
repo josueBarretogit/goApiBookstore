@@ -20,21 +20,70 @@ type PublisherController struct {
 	GenericController[usermodels.Publisher]
 }
 
+func NewPublisherController() *PublisherController {
+	generiController := NewGenericController[usermodels.Publisher]("Authors")
+	return &PublisherController{
+		GenericController: *generiController,
+	}
+}
+
+func (controller *PublisherController) AssignAuthor() gin.HandlerFunc {
+	return AssignManyToManyRelation[usermodels.Publisher, usermodels.Author](controller.RelationName)
+}
+
 type RoleController struct {
 	GenericController[usermodels.Role]
+}
+
+func NewRoleController() *RoleController {
+	generiController := NewGenericController[usermodels.Role]("Accounts")
+	return &RoleController{
+		GenericController: *generiController,
+	}
 }
 
 type AccountController struct {
 	GenericController[usermodels.Account]
 }
 
+func NewAccountController() *AccountController {
+	generiController := NewGenericController[usermodels.Account]("Roles")
+	return &AccountController{
+		GenericController: *generiController,
+	}
+}
+
+func (controller *AccountController) AssignRole() gin.HandlerFunc {
+	return AssignManyToManyRelation[usermodels.Account, usermodels.Role](controller.RelationName)
+}
+
 type AuthorController struct {
 	GenericController[usermodels.Author]
+}
+
+func NewAuthorController() *AuthorController {
+	generiController := NewGenericController[usermodels.Author]("Publishers")
+	return &AuthorController{
+		GenericController: *generiController,
+	}
+}
+
+func (controller *AuthorController) AssignPublisher() gin.HandlerFunc {
+	return AssignManyToManyRelation[usermodels.Author, usermodels.Publisher](controller.RelationName)
 }
 
 type CustomerController struct {
 	GenericController[usermodels.Customer]
 }
+
+
+func NewCustomerController() *CustomerController {
+	generiController := NewGenericController[usermodels.Customer]("Purchase")
+	return &CustomerController{
+		GenericController: *generiController,
+	}
+}
+
 
 func AssignManyToManyRelation[T interface{}, K interface{}](relation string) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -63,3 +112,5 @@ func AssignManyToManyRelation[T interface{}, K interface{}](relation string) gin
 		return
 	}
 }
+
+
