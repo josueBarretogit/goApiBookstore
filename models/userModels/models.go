@@ -1,6 +1,8 @@
 package usermodels
 
 import (
+	paymentmodels "api/bookstoreApi/models/paymentModels"
+
 	"gorm.io/gorm"
 )
 
@@ -24,6 +26,7 @@ type Customer struct {
 	ProfilePictureUrl string  `json:"profile_picture_url,omitempty"`
 	AccountID         uint    `json:"accountid" `
 	Account           Account `json:"account" `
+	Reviews []paymentmodels.Review `json:"reviews"` 
 }
 
 type Role struct {

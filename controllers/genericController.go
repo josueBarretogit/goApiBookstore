@@ -8,10 +8,17 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+type IController interface {
+	FindAll() gin.HandlerFunc
+	Create() gin.HandlerFunc
+	Update() gin.HandlerFunc
+	FindOneBy() gin.HandlerFunc
+	Delete() gin.HandlerFunc
+}
+
 type GenericController[T interface{}] struct {
 	RelationName string
 }
-
 
 func NewGenericController[T interface{}](relation string) *GenericController[T] {
 	return &GenericController[T]{
@@ -143,5 +150,3 @@ func (controller *GenericController[T]) Delete() gin.HandlerFunc {
 		return
 	}
 }
-
-

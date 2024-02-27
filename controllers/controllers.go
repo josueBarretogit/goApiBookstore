@@ -2,88 +2,85 @@ package controllers
 
 import (
 	"api/bookstoreApi/database"
+	bookmodels "api/bookstoreApi/models/bookModels"
+	paymentmodels "api/bookstoreApi/models/paymentModels"
 	usermodels "api/bookstoreApi/models/userModels"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-type IController interface {
-	FindAll() gin.HandlerFunc
-	Create() gin.HandlerFunc
-	Update() gin.HandlerFunc
-	FindOneBy() gin.HandlerFunc
-	Delete() gin.HandlerFunc
-}
-
-type PublisherController struct {
-	GenericController[usermodels.Publisher]
-}
-
-func NewPublisherController() *PublisherController {
-	generiController := NewGenericController[usermodels.Publisher]("Authors")
-	return &PublisherController{
-		GenericController: *generiController,
-	}
-}
-
-func (controller *PublisherController) AssignAuthor() gin.HandlerFunc {
-	return AssignManyToManyRelation[usermodels.Publisher, usermodels.Author](controller.RelationName)
-}
-
-type RoleController struct {
-	GenericController[usermodels.Role]
-}
-
-func NewRoleController() *RoleController {
-	generiController := NewGenericController[usermodels.Role]("Accounts")
-	return &RoleController{
-		GenericController: *generiController,
-	}
-}
-
-type AccountController struct {
-	GenericController[usermodels.Account]
-}
-
-func NewAccountController() *AccountController {
-	generiController := NewGenericController[usermodels.Account]("Roles")
-	return &AccountController{
-		GenericController: *generiController,
-	}
-}
-
-func (controller *AccountController) AssignRole() gin.HandlerFunc {
-	return AssignManyToManyRelation[usermodels.Account, usermodels.Role](controller.RelationName)
+type CustomerController struct {
+	GenericController[usermodels.Customer]
 }
 
 type AuthorController struct {
 	GenericController[usermodels.Author]
 }
 
-func NewAuthorController() *AuthorController {
-	generiController := NewGenericController[usermodels.Author]("Publishers")
-	return &AuthorController{
-		GenericController: *generiController,
-	}
+type AccountController struct {
+	GenericController[usermodels.Account]
+}
+
+type RoleController struct {
+	GenericController[usermodels.Role]
+}
+
+type PublisherController struct {
+	GenericController[usermodels.Publisher]
+}
+
+type BookController struct {
+	GenericController[bookmodels.Book]
+}
+
+type BookFormatController struct {
+	GenericController[bookmodels.BookFormat]
+}
+
+type HardCoverFormatController struct {
+	GenericController[bookmodels.HardCoverFormat]
+}
+
+type DigitalFormatController struct {
+	GenericController[bookmodels.DigitalFormat]
+}
+
+type PurchaseController struct {
+	GenericController[paymentmodels.Purchase]
+}
+
+type PaymentMethodController struct {
+	GenericController[paymentmodels.PaymentMethod]
+}
+
+type PurchaseDetailsController struct {
+	GenericController[paymentmodels.PurchaseDetails]
+}
+
+type CreditCardController struct {
+	GenericController[paymentmodels.CreditCard]
+}
+
+type BankAccountController struct {
+	GenericController[paymentmodels.BankAccount]
+}
+
+type ReviewController struct {
+	GenericController[paymentmodels.Review]
+}
+
+func (controller *PublisherController) AssignAuthor() gin.HandlerFunc {
+	return AssignManyToManyRelation[usermodels.Publisher, usermodels.Author](controller.RelationName)
+}
+
+func (controller *AccountController) AssignRole() gin.HandlerFunc {
+	return AssignManyToManyRelation[usermodels.Account, usermodels.Role](controller.RelationName)
 }
 
 func (controller *AuthorController) AssignPublisher() gin.HandlerFunc {
 	return AssignManyToManyRelation[usermodels.Author, usermodels.Publisher](controller.RelationName)
 }
-
-type CustomerController struct {
-	GenericController[usermodels.Customer]
-}
-
-
-func NewCustomerController() *CustomerController {
-	generiController := NewGenericController[usermodels.Customer]("Purchase")
-	return &CustomerController{
-		GenericController: *generiController,
-	}
-}
-
 
 func AssignManyToManyRelation[T interface{}, K interface{}](relation string) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -112,5 +109,3 @@ func AssignManyToManyRelation[T interface{}, K interface{}](relation string) gin
 		return
 	}
 }
-
-

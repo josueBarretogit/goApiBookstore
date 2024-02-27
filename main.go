@@ -2,7 +2,6 @@ package main
 
 import (
 	"api/bookstoreApi/config"
-	"api/bookstoreApi/controllers"
 	"api/bookstoreApi/database"
 	"api/bookstoreApi/server/routes"
 
@@ -18,21 +17,11 @@ func main() {
 		panic("Couldnt connect to db")
 	}
 
-
-	accountController := controllers.NewAccountController()
-	roleController := controllers.NewRoleController()
-	publisherController := controllers.NewPublisherController()
-	authorController := controllers.NewAuthorController()
-	customerController := controllers.NewCustomerController()
-
 	r := gin.Default()
 
-	routes.SetupRoutes("role", roleController, r)
-	routes.SetupRoutes("publisher", publisherController, r)
-	routes.SetupRoutes("account", accountController, r)
-	routes.SetupRoutes("author", authorController, r)
-	routes.SetupRoutes("customer", customerController, r)
+	for _, modelFormat := range routes.ModelList() {
+		routes.SetupRoutes(modelFormat.ModelName, modelFormat.Controller, r)
+	}
 
-	r.PUT("account/AssignManyToManyRelation/:id", accountController.AssignRole())
 	r.Run()
 }
