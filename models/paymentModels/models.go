@@ -32,6 +32,7 @@ type Review struct {
 	Title      string `json:"title,omitempty"`
 	BodyReview string `json:"body_review,omitempty"`
 	BookID     uint   `json:"book_id,omitempty"`
+	CustomerID uint `json:"customer_id,omitempty"`
 }
 
 type PaymentMethod struct {

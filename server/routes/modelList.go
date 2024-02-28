@@ -12,6 +12,7 @@ func ModelList() []ModelListFormat {
 		{ModelName: "role", Controller: controllers.NewRoleController()},
 		{ModelName: "author", Controller: controllers.NewAuthorController()},
 		{ModelName: "account", Controller: controllers.NewAccountController()},
+		{ModelName: "customer", Controller: controllers.NewCustomerController()},
 		{ModelName: "publisher", Controller: controllers.NewPublisherController()},
 		{ModelName: "book", Controller: controllers.NewBookController()},
 		{ModelName: "bookFormat", Controller: controllers.NewBookFormatController()},
@@ -26,3 +27,7 @@ func ModelList() []ModelListFormat {
 	}
 	return modelList
 }
+
+
+
+
