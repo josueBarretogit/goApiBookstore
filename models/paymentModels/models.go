@@ -19,9 +19,9 @@ type Order struct {
 
 type OrderDetails struct {
 	gorm.Model
-	Amount     int  `json:"amount,omitempty"`
+	Amount  int  `json:"amount,omitempty"`
 	OrderID uint `json:"order_id,omitempty"`
-	BookID     uint `json:"book_id,omitempty"`
+	BookID  uint `json:"book_id,omitempty"`
 }
 
 type Review struct {

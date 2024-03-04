@@ -1,11 +1,12 @@
 package controllers
 
 import (
+	"net/http"
+
 	"api/bookstoreApi/database"
 	bookmodels "api/bookstoreApi/models/bookModels"
 	paymentmodels "api/bookstoreApi/models/paymentModels"
 	usermodels "api/bookstoreApi/models/userModels"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )

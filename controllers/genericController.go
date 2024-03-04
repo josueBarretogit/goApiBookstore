@@ -1,8 +1,9 @@
 package controllers
 
 import (
-	"api/bookstoreApi/database"
 	"net/http"
+
+	"api/bookstoreApi/database"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm/clause"

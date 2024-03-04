@@ -16,5 +16,3 @@ func SetupRoutes(model string, controller controllers.IController, router *gin.E
 		group.DELETE("/delete/:id", controller.Delete())
 	}
 }
-
-

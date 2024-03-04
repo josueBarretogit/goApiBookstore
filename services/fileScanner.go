@@ -1,5 +1,4 @@
 package services
 
 func ScanFileBeforeUpload() {
-
 }

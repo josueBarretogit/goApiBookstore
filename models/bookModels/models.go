@@ -1,29 +1,28 @@
 package bookmodels
 
 import (
+	"time"
+
 	paymentmodels "api/bookstoreApi/models/paymentModels"
 	usermodels "api/bookstoreApi/models/userModels"
-	"time"
 
 	"gorm.io/gorm"
 )
 
-
-
 // --TODO: create table Genre
 type Book struct {
 	gorm.Model
-	Title           string                       `json:"title,omitempty"`
-	CoverPhotoUrl   string                       `json:"cover_photo_url,omitempty"`
-	Description     string                       `json:"description,omitempty"`
-	Rating          *int                         `json:"rating,omitempty"`
-	PublicationDate time.Time                    `json:"publication_date,omitempty"`
-	Genre           string                       `json:"genre,omitempty"`
-	Language        string                       `json:"language,omitempty"`
-	ISBN            string                       `json:"isbn,omitempty"`
-	Ranking         string                       `json:"ranking,omitempty"`
-	AuthorID        uint                        `json:"author_id,omitempty"`
-	Author          usermodels.Author            `json:"author,omitempty"`
+	Title           string                        `json:"title,omitempty"`
+	CoverPhotoUrl   string                        `json:"cover_photo_url,omitempty"`
+	Description     string                        `json:"description,omitempty"`
+	Rating          *int                          `json:"rating,omitempty"`
+	PublicationDate time.Time                     `json:"publication_date,omitempty"`
+	Genre           string                        `json:"genre,omitempty"`
+	Language        string                        `json:"language,omitempty"`
+	ISBN            string                        `json:"isbn,omitempty"`
+	Ranking         string                        `json:"ranking,omitempty"`
+	AuthorID        uint                          `json:"author_id,omitempty"`
+	Author          usermodels.Author             `json:"author,omitempty"`
 	OrderDetails    []*paymentmodels.OrderDetails `json:"purchase_details,omitempty"`
 }
 
@@ -32,7 +31,7 @@ type DigitalFormat struct {
 	Price        float64 `json:"price,omitempty"`
 	ScreenReader bool    `json:"screen_reader,omitempty"`
 	TextToSpeech bool    `json:"text_to_speech,omitempty"`
-	BookID *uint   `json:"book_id,omitempty"`
+	BookID       *uint   `json:"book_id,omitempty"`
 }
 
 type HardCoverFormat struct {
