@@ -14,16 +14,16 @@ type Purchase struct {
 	AddressShipTo   string            `json:"address_ship_to,omitempty"`
 	TotalPrice      float32           `json:"total_price,omitempty"`
 	deliveredDate   time.Time         `json:"delivered_date,omitempty"`
-	CustomerID      uint              `json:"customer_id,omitempty"`
+	CustomerID      *uint              `json:"customer_id,omitempty"`
 	PurchaseDetails []PurchaseDetails `json:"purchase_details,omitempty"`
-	PaymentMethodID uint              `json:"payment_method_id,omitempty"`
+	PaymentMethodID *uint              `json:"payment_method_id,omitempty"`
 }
 
 type PurchaseDetails struct {
 	gorm.Model
 	Amount     int  `json:"amount,omitempty"`
-	PurchaseID uint `json:"purchase_id,omitempty"`
-	BookID     uint `json:"book_id,omitempty"`
+	PurchaseID *uint `json:"purchase_id,omitempty"`
+	BookID     *uint `json:"book_id,omitempty"`
 }
 
 type Review struct {
@@ -31,8 +31,8 @@ type Review struct {
 	Rating     int    `json:"rating,omitempty"`
 	Title      string `json:"title,omitempty"`
 	BodyReview string `json:"body_review,omitempty"`
-	BookID     uint   `json:"book_id,omitempty"`
-	CustomerID uint `json:"customer_id,omitempty"`
+	BookID     *uint   `json:"book_id,omitempty"`
+	CustomerID *uint `json:"customer_id,omitempty"`
 }
 
 type PaymentMethod struct {
@@ -47,7 +47,7 @@ type BankAccount struct {
 	gorm.Model
 	BankProvider    string `json:"bank_provider,omitempty"`
 	BankNumber      string `json:"bank_number,omitempty"`
-	PaymentMethodID uint   `json:"payment_method_id,omitempty"`
+	PaymentMethodID *uint   `json:"payment_method_id,omitempty"`
 }
 
 type CreditCard struct {
@@ -55,5 +55,5 @@ type CreditCard struct {
 	CardNumber      string    `json:"card_number,omitempty"`
 	ExpirationDate  time.Time `json:"expiration_date,omitempty"`
 	SecurityCodeCvv string    `json:"security_code_cvv,omitempty"`
-	PaymentMethodID uint      `json:"payment_method_id,omitempty"`
+	PaymentMethodID *uint      `json:"payment_method_id,omitempty"`
 }

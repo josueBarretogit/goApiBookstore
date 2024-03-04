@@ -34,9 +34,6 @@ type BookController struct {
 	GenericController[bookmodels.Book]
 }
 
-type BookFormatController struct {
-	GenericController[bookmodels.BookFormat]
-}
 
 type HardCoverFormatController struct {
 	GenericController[bookmodels.HardCoverFormat]

@@ -48,12 +48,6 @@ func NewBookController() *BookController {
 	}
 }
 
-func NewBookFormatController() *BookFormatController {
-	generiController := NewGenericController[bookmodels.BookFormat]("")
-	return &BookFormatController{
-		GenericController: *generiController,
-	}
-}
 
 func NewHardCoverFormatController() *HardCoverFormatController {
 	generiController := NewGenericController[bookmodels.HardCoverFormat]("")

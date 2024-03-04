@@ -24,7 +24,7 @@ type Customer struct {
 	Address           string                 `json:"address,omitempty"`
 	PhoneNumber       string                 `json:"phone_number,omitempty"`
 	ProfilePictureUrl string                 `json:"profile_picture_url,omitempty"`
-	AccountID         uint                   `json:"accountid" `
+	AccountID         *uint                   `json:"accountid" `
 	Account           Account                `json:"account" `
 	Reviews           []paymentmodels.Review `json:"reviews"`
 }

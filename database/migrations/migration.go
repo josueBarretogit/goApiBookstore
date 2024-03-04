@@ -19,7 +19,6 @@ func Migrate() {
 		usermodels.Customer{},
 		usermodels.Publisher{},
 		bookmodels.Book{},
-		bookmodels.BookFormat{},
 		bookmodels.HardCoverFormat{},
 		bookmodels.DigitalFormat{},
 		paymentmodels.PaymentMethod{},

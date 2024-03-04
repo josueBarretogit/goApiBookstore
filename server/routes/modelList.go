@@ -15,7 +15,6 @@ func ModelList() []ModelListFormat {
 		{ModelName: "customer", Controller: controllers.NewCustomerController()},
 		{ModelName: "publisher", Controller: controllers.NewPublisherController()},
 		{ModelName: "book", Controller: controllers.NewBookController()},
-		{ModelName: "bookFormat", Controller: controllers.NewBookFormatController()},
 		{ModelName: "hardCoverFormat", Controller: controllers.NewHardCoverFormatController()},
 		{ModelName: "digitalFormat", Controller: controllers.NewDigitalFormatController()},
 		{ModelName: "purchase", Controller: controllers.NewPurchaseController()},
