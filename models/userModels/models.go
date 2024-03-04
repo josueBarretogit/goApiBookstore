@@ -40,6 +40,9 @@ type Account struct {
 	Username string  `json:"username" `
 	Password string  `json:"password" `
 	Roles    []*Role `gorm:"many2many:role_accounts;"`
+	BankAccount []*paymentmodels.BankAccount `json:"bank_account" ` 
+	CreditCard []*paymentmodels.CreditCard`json:"credit_card" ` 
+	
 }
 
 type Publisher struct {

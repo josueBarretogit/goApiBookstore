@@ -40,7 +40,7 @@ func (controller *GenericController[T]) Create() gin.HandlerFunc {
 			return
 		}
 
-		err := database.DB.Omit("Account").Create(&model)
+		err := database.DB.Create(&model)
 		if err.Error != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"dbError": err.Error,

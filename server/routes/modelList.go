@@ -17,16 +17,12 @@ func ModelList() []ModelListFormat {
 		{ModelName: "book", Controller: controllers.NewBookController()},
 		{ModelName: "hardCoverFormat", Controller: controllers.NewHardCoverFormatController()},
 		{ModelName: "digitalFormat", Controller: controllers.NewDigitalFormatController()},
-		{ModelName: "purchase", Controller: controllers.NewPurchaseController()},
-		{ModelName: "purchaseDetails", Controller: controllers.NewPurchaseDetailsController()},
+		{ModelName: "order", Controller: controllers.NewOrderController()},
+		{ModelName: "orderDetails", Controller: controllers.NewOrderDetailsController()},
 		{ModelName: "review", Controller: controllers.NewReviewController()},
-		{ModelName: "paymentMethod", Controller: controllers.NewPaymentMethodController()},
+		{ModelName: "payment", Controller: controllers.NewPaymentController()},
 		{ModelName: "creditCard", Controller: controllers.NewCreditCardController()},
 		{ModelName: "bankAccount", Controller: controllers.NewBankAccountControler()},
 	}
 	return modelList
 }
-
-
-
-

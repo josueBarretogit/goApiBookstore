@@ -34,7 +34,6 @@ type BookController struct {
 	GenericController[bookmodels.Book]
 }
 
-
 type HardCoverFormatController struct {
 	GenericController[bookmodels.HardCoverFormat]
 }
@@ -43,16 +42,16 @@ type DigitalFormatController struct {
 	GenericController[bookmodels.DigitalFormat]
 }
 
-type PurchaseController struct {
-	GenericController[paymentmodels.Purchase]
+type OrderController struct {
+	GenericController[paymentmodels.Order]
 }
 
-type PaymentMethodController struct {
-	GenericController[paymentmodels.PaymentMethod]
+type PaymentController struct {
+	GenericController[paymentmodels.Payment]
 }
 
 type PurchaseDetailsController struct {
-	GenericController[paymentmodels.PurchaseDetails]
+	GenericController[paymentmodels.OrderDetails]
 }
 
 type CreditCardController struct {
@@ -106,4 +105,3 @@ func AssignManyToManyRelation[T interface{}, K interface{}](relation string) gin
 		return
 	}
 }
-

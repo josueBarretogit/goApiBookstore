@@ -48,7 +48,6 @@ func NewBookController() *BookController {
 	}
 }
 
-
 func NewHardCoverFormatController() *HardCoverFormatController {
 	generiController := NewGenericController[bookmodels.HardCoverFormat]("")
 	return &HardCoverFormatController{
@@ -63,15 +62,15 @@ func NewDigitalFormatController() *DigitalFormatController {
 	}
 }
 
-func NewPurchaseController() *PurchaseController {
-	generiController := NewGenericController[paymentmodels.Purchase]("")
-	return &PurchaseController{
+func NewOrderController() *OrderController {
+	generiController := NewGenericController[paymentmodels.Order]("")
+	return &OrderController{
 		GenericController: *generiController,
 	}
 }
 
-func NewPurchaseDetailsController() *PurchaseDetailsController {
-	generiController := NewGenericController[paymentmodels.PurchaseDetails]("")
+func NewOrderDetailsController() *PurchaseDetailsController {
+	generiController := NewGenericController[paymentmodels.OrderDetails]("")
 	return &PurchaseDetailsController{
 		GenericController: *generiController,
 	}
@@ -84,9 +83,9 @@ func NewReviewController() *ReviewController {
 	}
 }
 
-func NewPaymentMethodController() *PaymentMethodController {
-	generiController := NewGenericController[paymentmodels.PaymentMethod]("")
-	return &PaymentMethodController{
+func NewPaymentController() *PaymentController {
+	generiController := NewGenericController[paymentmodels.Payment]("")
+	return &PaymentController{
 		GenericController: *generiController,
 	}
 }
