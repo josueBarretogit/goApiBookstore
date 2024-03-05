@@ -62,6 +62,14 @@ func NewDigitalFormatController() *DigitalFormatController {
 	}
 }
 
+func NewAudioBookFormatController() *AudioBookFormatController {
+	generiController := NewGenericController[bookmodels.AudioBookFormat]("")
+	return &AudioBookFormatController{
+		GenericController: *generiController,
+	}
+}
+
+
 func NewOrderController() *OrderController {
 	generiController := NewGenericController[paymentmodels.Order]("")
 	return &OrderController{

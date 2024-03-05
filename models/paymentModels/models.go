@@ -38,8 +38,8 @@ type Payment struct {
 	gorm.Model
 	DatePayment   time.Time `json:"date_payment,omitempty"`
 	TotalPayed    float64   `json:"total_price,omitempty"`
-	BankAccountID *uint     `json:"bank_account,omitempty"`
-	CreditCardID  *uint     `json:"credit_card,omitempty"`
+	BankAccountID *uint     `json:"bank_account_id,omitempty"`
+	CreditCardID  *uint     `json:"credit_card_id,omitempty"`
 }
 
 type BankAccount struct {

@@ -43,6 +43,9 @@ type DigitalFormatController struct {
 	GenericController[bookmodels.DigitalFormat]
 }
 
+type AudioBookFormatController struct {
+	GenericController[bookmodels.AudioBookFormat]
+}
 type OrderController struct {
 	GenericController[paymentmodels.Order]
 }

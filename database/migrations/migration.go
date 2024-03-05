@@ -21,6 +21,7 @@ func Migrate() {
 		bookmodels.Book{},
 		bookmodels.HardCoverFormat{},
 		bookmodels.DigitalFormat{},
+		bookmodels.AudioBookFormat{},
 		paymentmodels.Payment{},
 		paymentmodels.Order{},
 		paymentmodels.OrderDetails{},

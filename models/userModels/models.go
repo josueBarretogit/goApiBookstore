@@ -32,7 +32,6 @@ type Customer struct {
 type Role struct {
 	gorm.Model
 	Rolename string     `json:"rolename" `
-	Accounts []*Account `gorm:"many2many:role_accounts;"`
 }
 
 type Account struct {
