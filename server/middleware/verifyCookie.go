@@ -1,5 +1,4 @@
 package middleware
 
 func VerifyCookie() {
-
 }

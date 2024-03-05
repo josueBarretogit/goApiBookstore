@@ -1,80 +1,40 @@
 package main
 
 import (
+	"os"
+
+	"api/bookstoreApi/config"
 	"api/bookstoreApi/controllers"
-	"api/bookstoreApi/initializers"
-	"errors"
-	"net/http"
+	"api/bookstoreApi/database"
+	"api/bookstoreApi/database/migrations"
+	"api/bookstoreApi/server/routes"
 
 	"github.com/gin-gonic/gin"
 )
 
-type Todo struct {
-	Id        string `json:"id"`
-	Item      string `json:"item"`
-	Completed bool   `json:"completed"`
-}
-
-var todos = []Todo{
-	{Id: "1", Item: "clean room", Completed: false},
-	{Id: "1", Item: "clean dirty", Completed: false},
-}
-
-func getTodos(context *gin.Context) {
-	context.IndentedJSON(http.StatusOK, todos)
-}
-
-func addTodo(context *gin.Context) {
-	var todo Todo
-	if err := context.BindJSON(&todo); err != nil {
-		return
-	}
-	todos = append(todos, todo)
-}
-
-func getTodo(context *gin.Context) {
-	id := context.Param("id")
-	todo, err := getTodoById(id)
-	if err != nil {
-		context.IndentedJSON(http.StatusNotFound, gin.H{"message": "Todo not found"})
-	}
-	context.IndentedJSON(http.StatusOK, todo)
-}
-
-func getTodoById(id string) (*Todo, error) {
-	for i, t := range todos {
-		if t.Id == id {
-			return &todos[i], nil
-		}
-	}
-	return nil, errors.New("Todo not found")
-}
-
-func toggleTodoEstado(context *gin.Context) {
-	id := context.Param("id")
-	todo, err := getTodoById(id)
-	if err != nil {
-		context.IndentedJSON(http.StatusNotFound, gin.H{"message": "Todo not found"})
-		return
-	}
-	todo.Completed = !todo.Completed
-	context.IndentedJSON(http.StatusOK, todo)
-}
-
-func init() {
-	initializers.LoadEnvVariables()
-}
-
 func main() {
+	config.LoadEnv()
 
-	//Db := initializers.ConnectToDB()
+	dbErr := database.ConnectToDB()
+
+	if dbErr != nil {
+		panic("Couldnt connect to db")
+	}
+
+	if os.Getenv("MIGRATE") != "" {
+		migrations.Migrate()
+		return
+	}
 
 	r := gin.Default()
 
-	r.POST("/post/create", controllers.PostCreate)
-	r.GET("/post/getAll", controllers.ReadPost)
-	r.PUT("/post/update/:id", controllers.UpdatePost)
-	r.DELETE("/post/delete/:id", controllers.DeletePost)
+	for _, modelFormat := range routes.ModelList() {
+		routes.SetupRoutes(modelFormat.ModelName, modelFormat.Controller, r)
+	}
 
-	r.Run() // listen and serve on 0.0.0.0:8080
+	r.PUT("account/assignRole/:id", controllers.NewAccountController().AssignRole())
+	r.PUT("author/assignPublisher/:id", controllers.NewAuthorController().AssignPublisher())
+	r.PUT("publisher/assignAuthor/:id", controllers.NewPublisherController().AssignAuthor())
+
+	r.Run()
 }
