@@ -24,3 +24,7 @@ go.work
 /tmp
 
 /public
+
+*.rsa
+
+*.rsa.pub

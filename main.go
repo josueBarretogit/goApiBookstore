@@ -7,6 +7,7 @@ import (
 	"api/bookstoreApi/controllers"
 	"api/bookstoreApi/database"
 	"api/bookstoreApi/database/migrations"
+	"api/bookstoreApi/server/middleware"
 	"api/bookstoreApi/server/routes"
 
 	"github.com/gin-gonic/gin"
@@ -35,6 +36,7 @@ func main() {
 	r.PUT("account/assignRole/:id", controllers.NewAccountController().AssignRole())
 	r.PUT("author/assignPublisher/:id", controllers.NewAuthorController().AssignPublisher())
 	r.PUT("publisher/assignAuthor/:id", controllers.NewPublisherController().AssignAuthor())
+	r.POST("account/logIn", middleware.VerifyJwt(),  controllers.NewAccountController().LogIn())
 
 	r.Run()
 }
