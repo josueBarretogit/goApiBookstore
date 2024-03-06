@@ -4,13 +4,11 @@ import (
 	"net/http"
 
 	"api/bookstoreApi/database"
-	"api/bookstoreApi/helpers"
 	bookmodels "api/bookstoreApi/models/bookModels"
 	paymentmodels "api/bookstoreApi/models/paymentModels"
 	usermodels "api/bookstoreApi/models/userModels"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 type CustomerController struct {
@@ -76,35 +74,9 @@ func (controller *PublisherController) AssignAuthor() gin.HandlerFunc {
 	return AssignManyToManyRelation[usermodels.Publisher, usermodels.Author](controller.RelationName)
 }
 
-func (controller *AccountController) AssignRole() gin.HandlerFunc {
-	return AssignManyToManyRelation[usermodels.Account, usermodels.Role](controller.RelationName)
-}
 
 func (controller *AuthorController) AssignPublisher() gin.HandlerFunc {
 	return AssignManyToManyRelation[usermodels.Author, usermodels.Publisher](controller.RelationName)
-}
-
-func (controller *AccountController) LogIn() gin.HandlerFunc {
-
-	return func(ctx *gin.Context) {
-
-		newToken, err  := helpers.GenerateNewJwtToken(jwt.MapClaims{
-			"accountId" : "a",
-		})
-
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{
-				"error" : err.Error(),
-			})
-			return
-		}
-
-
-		ctx.JSON(http.StatusOK, gin.H{
-			"token" : newToken,
-		})
-
-	}
 }
 
 func AssignManyToManyRelation[T interface{}, K interface{}](relation string) gin.HandlerFunc {

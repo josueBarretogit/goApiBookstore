@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func ParseDate(date *any) {
@@ -25,3 +26,12 @@ func GenerateNewJwtToken(payload jwt.Claims) (string, error)  {
 	return token.SignedString(key)
 }
 
+func HashPassword(password string) (string, error) {
+    bytes, err := bcrypt.GenerateFromPassword([]byte(password), 8)
+    return string(bytes), err
+}
+
+func CheckPasswordHash(password, hash string) bool {
+    err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+    return err == nil
+}

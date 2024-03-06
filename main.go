@@ -29,14 +29,16 @@ func main() {
 
 	r := gin.Default()
 
+	r.POST("account/logIn", controllers.NewAccountController().LogIn())
+	r.POST("account/register", controllers.NewAccountController().Register())
+
 	for _, modelFormat := range routes.ModelList() {
 		routes.SetupRoutes(modelFormat.ModelName, modelFormat.Controller, r)
 	}
 
-	r.PUT("account/assignRole/:id", controllers.NewAccountController().AssignRole())
+	r.PUT("account/assignRole/:id", middleware.VerifyJwt(), controllers.NewAccountController().AssignRole())
 	r.PUT("author/assignPublisher/:id", controllers.NewAuthorController().AssignPublisher())
 	r.PUT("publisher/assignAuthor/:id", controllers.NewPublisherController().AssignAuthor())
-	r.POST("account/logIn", middleware.VerifyJwt(),  controllers.NewAccountController().LogIn())
 
 	r.Run()
 }
