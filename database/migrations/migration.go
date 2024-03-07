@@ -7,12 +7,12 @@ import (
 	usermodels "api/bookstoreApi/models/userModels"
 )
 
-func Migrate() {
+func Migrate() error {
 	error := database.ConnectToDB()
 	if error != nil {
 		panic("Error connecting to db")
 	}
-	database.DB.AutoMigrate(
+	return database.DB.AutoMigrate(
 		usermodels.Role{},
 		usermodels.Account{},
 		usermodels.Author{},

@@ -52,7 +52,6 @@ func (controller *GenericController[T]) Create() gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{
 			"created": model,
 		})
-		return
 	}
 }
 
@@ -66,10 +65,10 @@ func (controller *GenericController[T]) FindAll() gin.HandlerFunc {
 			})
 			return
 		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"models": models,
 		})
-		return
 	}
 }
 
@@ -87,12 +86,7 @@ func (controller *GenericController[T]) FindOneBy() gin.HandlerFunc {
 			return
 		}
 
-		if &model == nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "That model does not exist",
-			})
-			return
-		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"model": model,
 		})
@@ -112,7 +106,14 @@ func (controller *GenericController[T]) Update() gin.HandlerFunc {
 			})
 			return
 		}
-		c.BindJSON(&modelData)
+		errJson := c.BindJSON(&modelData)
+		if errJson != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"error": errJson.Error,
+			})
+			return
+		}
+
 		errDatabase := database.DB.Model(&modelToUpdate).Updates(&modelData)
 		if err.Error != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -123,7 +124,6 @@ func (controller *GenericController[T]) Update() gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{
 			"updated": modelToUpdate,
 		})
-		return
 	}
 }
 
@@ -148,6 +148,6 @@ func (controller *GenericController[T]) Delete() gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{
 			"deleted": modelToDelete,
 		})
-		return
 	}
 }
+

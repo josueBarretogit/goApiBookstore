@@ -32,20 +32,27 @@ func VerifyJwt() gin.HandlerFunc {
 
 			return key, nil
 		})
+
 		if err != nil {
 			panic(err)
 		}
 
+		claims, ok := verified.Claims.(jwt.MapClaims)
 
-		if claims, ok := verified.Claims.(jwt.MapClaims); ok {
-			fmt.Println(claims["accountId"])
-			ctx.Next()
-		} else {
+		if !ok && verified.Valid {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"response" : "not authorzed",
 			})
 			return
-		}
+
+		} 
+
+		accountID := fmt.Sprintf("%f",claims["accountID"].(float64)) 
+
+		ctx.Request.Header.Set("username", claims["username"].(string))
+		ctx.Request.Header.Set("accountID", accountID)
+
+		ctx.Next()
 	}
 }
 

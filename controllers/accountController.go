@@ -27,30 +27,41 @@ func (controller *AccountController) LogIn() gin.HandlerFunc {
 			return
 		}
 
-		errDb := database.DB.Model(&payload).Where(&payload.Username).Find(&accountFound)
+
+		errDb := database.DB.Model(&usermodels.Account{}).Where(usermodels.Account{Username: payload.Username}).Find(&accountFound)
 
 		if errDb.Error != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"error" : errDb.Error.Error(),
+				"dbError" : errDb.Error.Error(),
 			})
 			ctx.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
 
-		verifiyPassowrd := helpers.CheckPasswordHash(accountFound.Password, payload.Password)
-		
-		if !verifiyPassowrd {
+		if accountFound.ID == 0 {
+
 			ctx.JSON(http.StatusBadRequest, gin.H{
 				"response" : "This account doesnt exist",
 				"success" :false,
 			})
-			ctx.AbortWithStatus(http.StatusInternalServerError)
+			ctx.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+
+		verifiyPassowrd := helpers.CheckPasswordHash(payload.Password, accountFound.Password)
+		
+		if !verifiyPassowrd {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"response" : "Password doesnt match",
+				"success" :false,
+			})
+			ctx.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 
 		newToken, err  := helpers.GenerateNewJwtToken(jwt.MapClaims{
-			"accountId" : payload.ID,
-			"username" : payload.Username,
+			"accountID" : accountFound.ID,
+			"username" : accountFound.Username,
 		})
 
 		if err != nil {
@@ -61,10 +72,13 @@ func (controller *AccountController) LogIn() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, gin.H{
-			"response" : "login succesfull",
+			"response" : "login successful",
 			"success" : true,
 			"token" : newToken,
-			"accountLogged":  payload,
+			"accountLogged":  map[string]any{
+				"username" : accountFound.Username,
+				"roles" : accountFound.Roles, 
+			},
 		})
 
 	}
@@ -105,13 +119,13 @@ func (controller *AccountController) Register() gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, gin.H{
 				"dbError": err.Error.Error(),
 			})
+			ctx.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 
 		ctx.JSON(http.StatusOK, gin.H{
 			"registered": newAccount,
 		})
-		return
 
 	}
 }

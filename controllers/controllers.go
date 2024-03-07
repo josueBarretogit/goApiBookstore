@@ -92,7 +92,15 @@ func AssignManyToManyRelation[T interface{}, K interface{}](relation string) gin
 			})
 			return
 		}
-		c.BindJSON(&modelData)
+
+		errJson := c.BindJSON(&modelData)
+		if errJson != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"error": errJson.Error,
+			})
+			return
+		}
+
 		errDatabase := database.DB.Model(&modelToUpdate).Association(relation).Append(&modelData)
 		if err.Error != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -103,6 +111,5 @@ func AssignManyToManyRelation[T interface{}, K interface{}](relation string) gin
 		c.JSON(http.StatusOK, gin.H{
 			"updated": modelData,
 		})
-		return
 	}
 }
