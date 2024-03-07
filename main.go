@@ -6,9 +6,7 @@ import (
 	"api/bookstoreApi/config"
 	"api/bookstoreApi/database"
 	"api/bookstoreApi/database/migrations"
-	"api/bookstoreApi/server/routes"
-
-	"github.com/gin-gonic/gin"
+	"api/bookstoreApi/server"
 )
 
 func main() {
@@ -32,16 +30,7 @@ func main() {
 		return
 	}
 
-	r := gin.Default()
-
-	for _, modelFormat := range routes.ModelList() {
-		routes.SetupRoutes(modelFormat.ModelName, modelFormat.Controller, r)
-	}
-
-	routes.SetupRoutesAccount(r)
-	routes.SetupRoutesAuthor(r)
-	routes.SetupRoutesPublisher(r)
-
+	r := server.SetupServer()
 	errRoute := r.Run()
 	if errRoute != nil {
 		panic(errRoute.Error())

@@ -21,7 +21,7 @@ func ModelList() []ModelListFormat {
 		{ModelName: consts.HardcoverFormatModelName, Controller: controllers.NewHardCoverFormatController()},
 		{ModelName: consts.DigitalFormatModelName, Controller: controllers.NewDigitalFormatController()},
 		{ModelName: consts.AudioBookFormatModelName, Controller: controllers.NewAudioBookFormatController()},
-		{ModelName: consts.OrderDetailsModelName, Controller: controllers.NewOrderController()},
+		{ModelName: consts.OrderModelName, Controller: controllers.NewOrderController()},
 		{ModelName: consts.OrderDetailsModelName, Controller: controllers.NewOrderDetailsController()},
 		{ModelName: consts.ReviewModelName, Controller: controllers.NewReviewController()},
 		{ModelName: consts.PaymentModelName, Controller: controllers.NewPaymentController()},
