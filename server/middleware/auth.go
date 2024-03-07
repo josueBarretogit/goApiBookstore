@@ -13,12 +13,18 @@ import (
 
 
 func VerifyJwt() gin.HandlerFunc {
-	publicKey , errKey := os.ReadFile("/home/sistemas/Escritorio/goApiBookstore/helpers/public.rsa.pub")
+	publicKey , errKey := os.ReadFile(os.Getenv("PATH_PUBLIC_KEY"))
 	if errKey != nil {
 		panic(errKey.Error())
 	}
 	return func(ctx *gin.Context) {
 		token := ctx.Request.Header.Get("authorization")	
+		if token == "" {
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"response" : "Not authorized",
+			})
+			return
+		}
 		verified , err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 
 			if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {

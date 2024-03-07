@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"api/bookstoreApi/consts"
 	"api/bookstoreApi/controllers"
 	"api/bookstoreApi/server/middleware"
 
@@ -10,11 +11,11 @@ import (
 func SetupRoutes(model string, controller controllers.IController, router *gin.Engine) {
 	group := router.Group(model)
 	{
-		group.GET("/findall", middleware.VerifyJwt(), controller.FindAll())
-		group.GET("/findby/:id", middleware.VerifyJwt() , controller.FindOneBy())
-		group.POST("/save", controller.Create())
-		group.PUT("/update/:id", controller.Update())
-		group.DELETE("/delete/:id", controller.Delete())
+		group.GET(consts.RouteFindAll, middleware.VerifyJwt(), controller.FindAll())
+		group.GET(consts.RouteFindById, middleware.VerifyJwt() , controller.FindOneBy())
+		group.POST(consts.RouteCreate, controller.Create())
+		group.PUT(consts.RouteUpdate, controller.Update())
+		group.DELETE(consts.RouteDelete, controller.Delete())
 
 		
 	}
