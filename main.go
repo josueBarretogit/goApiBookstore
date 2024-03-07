@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"api/bookstoreApi/config"
-	"api/bookstoreApi/controllers"
 	"api/bookstoreApi/database"
 	"api/bookstoreApi/database/migrations"
 	"api/bookstoreApi/server/routes"
@@ -35,14 +34,13 @@ func main() {
 
 	r := gin.Default()
 
-	routes.SetupRoutesAccount(r)
-
 	for _, modelFormat := range routes.ModelList() {
 		routes.SetupRoutes(modelFormat.ModelName, modelFormat.Controller, r)
 	}
 
-	r.PUT("author/assignPublisher/:id", controllers.NewAuthorController().AssignPublisher())
-	r.PUT("publisher/assignAuthor/:id", controllers.NewPublisherController().AssignAuthor())
+	routes.SetupRoutesAccount(r)
+	routes.SetupRoutesAuthor(r)
+	routes.SetupRoutesPublisher(r)
 
 	errRoute := r.Run()
 	if errRoute != nil {

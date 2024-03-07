@@ -1,6 +1,9 @@
 package routes
 
-import "api/bookstoreApi/controllers"
+import (
+	"api/bookstoreApi/consts"
+	"api/bookstoreApi/controllers"
+)
 
 type ModelListFormat struct {
 	ModelName  string
@@ -9,21 +12,21 @@ type ModelListFormat struct {
 
 func ModelList() []ModelListFormat {
 	modelList := []ModelListFormat{
-		{ModelName: "role", Controller: controllers.NewRoleController()},
-		{ModelName: "author", Controller: controllers.NewAuthorController()},
-		{ModelName: "account", Controller: controllers.NewAccountController()},
-		{ModelName: "customer", Controller: controllers.NewCustomerController()},
-		{ModelName: "publisher", Controller: controllers.NewPublisherController()},
-		{ModelName: "book", Controller: controllers.NewBookController()},
-		{ModelName: "hardcoverFormat", Controller: controllers.NewHardCoverFormatController()},
-		{ModelName: "digitalFormat", Controller: controllers.NewDigitalFormatController()},
-		{ModelName: "audioBookFormat", Controller: controllers.NewAudioBookFormatController()},
-		{ModelName: "order", Controller: controllers.NewOrderController()},
-		{ModelName: "orderDetails", Controller: controllers.NewOrderDetailsController()},
-		{ModelName: "review", Controller: controllers.NewReviewController()},
-		{ModelName: "payment", Controller: controllers.NewPaymentController()},
-		{ModelName: "creditCard", Controller: controllers.NewCreditCardController()},
-		{ModelName: "bankAccount", Controller: controllers.NewBankAccountControler()},
+		{ModelName: consts.RoleModelName, Controller: controllers.NewRoleController()},
+		{ModelName: consts.AuthorModelName, Controller: controllers.NewAuthorController()},
+		{ModelName: consts.AccountModelName, Controller: controllers.NewAccountController()},
+		{ModelName: consts.CustomerModelName, Controller: controllers.NewCustomerController()},
+		{ModelName: consts.PublisherModelName, Controller: controllers.NewPublisherController()},
+		{ModelName: consts.BookModelName, Controller: controllers.NewBookController()},
+		{ModelName: consts.HardcoverFormatModelName, Controller: controllers.NewHardCoverFormatController()},
+		{ModelName: consts.DigitalFormatModelName, Controller: controllers.NewDigitalFormatController()},
+		{ModelName: consts.AudioBookFormatModelName, Controller: controllers.NewAudioBookFormatController()},
+		{ModelName: consts.OrderDetailsModelName, Controller: controllers.NewOrderController()},
+		{ModelName: consts.OrderDetailsModelName, Controller: controllers.NewOrderDetailsController()},
+		{ModelName: consts.ReviewModelName, Controller: controllers.NewReviewController()},
+		{ModelName: consts.PaymentModelName, Controller: controllers.NewPaymentController()},
+		{ModelName: consts.CreditCardModelName, Controller: controllers.NewCreditCardController()},
+		{ModelName: consts.BankAccountModelName, Controller: controllers.NewBankAccountControler()},
 	}
 	return modelList
 }
