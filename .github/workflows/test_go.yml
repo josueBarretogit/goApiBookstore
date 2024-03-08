@@ -32,6 +32,7 @@ jobs:
           echo "PUBLIC_KEY=${{ secrets.PUBLIC_KEY }}" >> .env
           cp .env tests/
           echo "${{secrets.PUBLIC_KEY}}" >> public.rsa.pub
+          ls -f
           # Add more lines for other secrets, following the same pattern
           #
     - name: Build
