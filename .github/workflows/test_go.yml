@@ -22,6 +22,15 @@ jobs:
       with:
         go-version: '1.21.x'
 
+    - name: Generate .env file
+      run: |
+          echo "DB_URI=${{ secrets.DB_URI }}" >> .env
+          echo "JWT_KEY_TESTS=${{ secrets.JWT_KEY_TESTS }}" >> .env
+          echo "PORT=${{ secrets.PORT }}" >> .env
+          echo "ROOT_API=${{ secrets.ROOT_API }}" >> .env
+          ls
+          # Add more lines for other secrets, following the same pattern
+          #
     - name: Build
       run: go build -v ./...
 
