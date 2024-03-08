@@ -3,28 +3,44 @@ package tests
 import (
 	"api/bookstoreApi/consts"
 	"api/bookstoreApi/server"
-	"fmt"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 
-func TestFindAllRoute(t *testing.T) {
+
+type ApiResponse struct {
+	Models []interface{} `json:"models"`
+}
+
+func TestFindAllRouteRole(t *testing.T) {
 
 	router := server.SetupServer()
-
+  assert := assert.New(t)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", os.Getenv("ROOT_API") + consts.RoleModelName + consts.RouteFindAll, nil)
+	req, errRequest := http.NewRequest("GET", os.Getenv("ROOT_API") + consts.RoleModelName + consts.RouteFindAll, nil)
+
 	req.Header.Add("authorization", os.Getenv("JWT_KEY_TESTS"))
 
-	fmt.Println(req.Header.Get("authorization"))
+	assert.NoError(errRequest, "no error when requesting")
 
 	router.ServeHTTP(w, req)
 
-	assert.Equal(t, 200, w.Code)
+	response := w.Result()
+	var body ApiResponse
+
+	errBody := json.Unmarshal(w.Body.Bytes(), &body)
+
+	assert.NoError(errBody , "should unmarshal response body")
+
+	assert.Equal(http.StatusOK, response.StatusCode, "status code should be 200")
+	assert.Containsf( w.Body.String(), "models", "response should contain at least models")
+	assert.True(reflect.TypeOf(body.Models).Kind() == reflect.Slice, "response models should be slice")
 }
