@@ -69,7 +69,6 @@ func NewAudioBookFormatController() *AudioBookFormatController {
 	}
 }
 
-
 func NewOrderController() *OrderController {
 	generiController := NewGenericController[paymentmodels.Order]("")
 	return &OrderController{

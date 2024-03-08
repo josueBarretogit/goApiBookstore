@@ -31,7 +31,7 @@ type Customer struct {
 
 type Role struct {
 	gorm.Model
-	Rolename string     `json:"rolename" `
+	Rolename string `json:"rolename" `
 }
 
 type Account struct {
