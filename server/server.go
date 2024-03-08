@@ -36,5 +36,6 @@ func SetupServer() *gin.Engine {
 	routes.SetupRoutesAccount(r)
 	routes.SetupRoutesAuthor(r)
 	routes.SetupRoutesPublisher(r)
+	routes.SetupRoutesBookRoutes(r)
 	return r
 }

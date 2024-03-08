@@ -1,5 +1,10 @@
 package consts
 
+import (
+	"os"
+	"path/filepath"
+)
+
 const (
 	RoleModelName            = "role"
 	AuthorModelName          = "author"
@@ -21,4 +26,9 @@ const (
 	RouteCreate              = "/save"
 	RouteUpdate              = "/update/:id"
 	RouteDelete              = "/delete/:id"
+	RouteBookImageUpload              = "/uploadBookImages/:id"
 )
+
+func GetRootDir() (string, error) {
+	return filepath.Abs(filepath.Dir(os.Args[0]))
+}

@@ -110,3 +110,9 @@ func NewBankAccountControler() *BankAccountController {
 		GenericController: *generiController,
 	}
 }
+
+func NewBookImageController(directoryToStoreImages string) *ImageController {
+	return &ImageController{
+		DirectoryToStoreImagesPath: directoryToStoreImages,
+	}
+}
