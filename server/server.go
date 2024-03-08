@@ -1,6 +1,8 @@
 package server
 
 import (
+	"api/bookstoreApi/config"
+	"api/bookstoreApi/database"
 	"api/bookstoreApi/server/routes"
 
 	"github.com/gin-gonic/gin"
@@ -9,6 +11,19 @@ import (
 
 
 func SetupServer() *gin.Engine {
+	errEnv := config.LoadEnv()
+
+	if errEnv != nil {
+		panic(errEnv.Error())
+	}
+
+	dbErr := database.ConnectToDB()
+
+	if dbErr != nil {
+		panic("Couldnt connect to db")
+	}
+
+
 	r := gin.Default()
 
 	for _, modelFormat := range routes.ModelList() {
