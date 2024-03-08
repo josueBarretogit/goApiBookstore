@@ -11,21 +11,21 @@ import (
 func ParseDate(date *any) {
 }
 
-func GenerateNewJwtToken(payload jwt.Claims) (string, error)  {
+func GenerateNewJwtToken(payload jwt.Claims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
 	return token.SignedString([]byte(os.Getenv("PRIVATE_KEY")))
 }
 
 func HashPassword(password string) (string, error) {
-    bytes, err := bcrypt.GenerateFromPassword([]byte(password), 8)
-    return string(bytes), err
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 8)
+	return string(bytes), err
 }
 
 func CheckPasswordHash(password, hash string) bool {
-    err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-    return err == nil
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }
 
 func ParseStringToFloat64(s string) (float64, error) {
- return strconv.ParseFloat(s, 64)
+	return strconv.ParseFloat(s, 64)
 }

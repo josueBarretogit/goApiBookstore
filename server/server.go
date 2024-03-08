@@ -4,11 +4,10 @@ import (
 	"api/bookstoreApi/config"
 	"api/bookstoreApi/database"
 	"api/bookstoreApi/server/routes"
+	"flag"
 
 	"github.com/gin-gonic/gin"
 )
-
-
 
 func SetupServer() *gin.Engine {
 	errEnv := config.LoadEnv()
@@ -23,8 +22,12 @@ func SetupServer() *gin.Engine {
 		panic("Couldnt connect to db")
 	}
 
+	if flag.Lookup("test.v") != nil {
+		gin.SetMode(gin.ReleaseMode)
+	}
+	r := gin.New()
 
-	r := gin.Default()
+	r.Use(gin.Recovery())
 
 	for _, modelFormat := range routes.ModelList() {
 		routes.SetupRoutes(modelFormat.ModelName, modelFormat.Controller, r)

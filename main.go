@@ -21,5 +21,4 @@ func main() {
 	if errRoute != nil {
 		panic(errRoute.Error())
 	}
-
 }

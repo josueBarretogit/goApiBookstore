@@ -86,7 +86,6 @@ func (controller *GenericController[T]) FindOneBy() gin.HandlerFunc {
 			return
 		}
 
-
 		c.JSON(http.StatusOK, gin.H{
 			"model": model,
 		})
@@ -150,4 +149,3 @@ func (controller *GenericController[T]) Delete() gin.HandlerFunc {
 		})
 	}
 }
-

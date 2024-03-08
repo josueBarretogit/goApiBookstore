@@ -12,12 +12,10 @@ func SetupRoutes(model string, controller controllers.IController, router *gin.E
 	group := router.Group(model)
 	{
 		group.GET(consts.RouteFindAll, middleware.VerifyJwt(), controller.FindAll())
-		group.GET(consts.RouteFindById, middleware.VerifyJwt() , controller.FindOneBy())
+		group.GET(consts.RouteFindById, middleware.VerifyJwt(), controller.FindOneBy())
 		group.POST(consts.RouteCreate, controller.Create())
 		group.PUT(consts.RouteUpdate, controller.Update())
 		group.DELETE(consts.RouteDelete, controller.Delete())
 
-		
 	}
-
 }

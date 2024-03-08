@@ -74,7 +74,6 @@ func (controller *PublisherController) AssignAuthor() gin.HandlerFunc {
 	return AssignManyToManyRelation[usermodels.Publisher, usermodels.Author](controller.RelationName)
 }
 
-
 func (controller *AuthorController) AssignPublisher() gin.HandlerFunc {
 	return AssignManyToManyRelation[usermodels.Author, usermodels.Publisher](controller.RelationName)
 }

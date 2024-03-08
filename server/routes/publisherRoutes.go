@@ -7,13 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
-func SetupRoutesPublisher(r *gin.Engine)  {
-
+func SetupRoutesPublisher(r *gin.Engine) {
 	publisherRoutes := r.Group(consts.AuthorModelName)
 	publisherController := controllers.NewPublisherController()
 	{
-	publisherRoutes.PUT("/assignAuthor/:id", publisherController.AssignAuthor())
+		publisherRoutes.PUT("/assignAuthor/:id", publisherController.AssignAuthor())
 	}
-
 }
