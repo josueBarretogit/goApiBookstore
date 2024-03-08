@@ -59,14 +59,14 @@ func (controller *AccountController) LogIn() gin.HandlerFunc {
 			return
 		}
 
-		newToken, err  := helpers.GenerateNewJwtToken(jwt.MapClaims{
+		newToken, errToken  := helpers.GenerateNewJwtToken(jwt.MapClaims{
 			"accountID" : accountFound.ID,
 			"username" : accountFound.Username,
 		})
 
-		if err != nil {
+		if errToken != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{
-				"error" : err.Error(),
+				"errorToken" : errToken.Error(),
 			})
 			return
 		}

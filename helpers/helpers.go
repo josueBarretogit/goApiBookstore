@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 
@@ -13,14 +12,8 @@ func ParseDate(date *any) {
 }
 
 func GenerateNewJwtToken(payload jwt.Claims) (string, error)  {
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, payload)
-
-	key, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(os.Getenv("PRIVATE_KEY")))
-	if err != nil {
-		return "", fmt.Errorf("error parsing RSA private key: %v\n", err)
-	}
-
-	return token.SignedString(key)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
+	return token.SignedString([]byte(os.Getenv("PRIVATE_KEY")))
 }
 
 func HashPassword(password string) (string, error) {
