@@ -22,5 +22,4 @@ func main() {
 		panic(errRoute.Error())
 	}
 
-
 }
