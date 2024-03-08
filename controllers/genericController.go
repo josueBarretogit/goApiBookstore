@@ -79,7 +79,7 @@ func (controller *GenericController[T]) FindOneBy() gin.HandlerFunc {
 
 		err := database.DB.Limit(1).Preload(clause.Associations).Find(&model, id)
 		if err.Error != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"dbError": err.Error,
 			})
 			return
@@ -99,7 +99,7 @@ func (controller *GenericController[T]) Update() gin.HandlerFunc {
 		id := c.Params.ByName("id")
 		err := database.DB.First(&modelToUpdate, id)
 		if err.Error != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"dbError": err.Error,
 			})
 			return
@@ -131,7 +131,7 @@ func (controller *GenericController[T]) Delete() gin.HandlerFunc {
 		id := c.Params.ByName("id")
 		err := database.DB.First(&modelToDelete, id)
 		if err.Error != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"dbError": err.Error,
 			})
 			return
