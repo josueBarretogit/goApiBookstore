@@ -28,6 +28,8 @@ jobs:
           echo "JWT_KEY_TESTS=${{ secrets.JWT_KEY_TESTS }}" >> .env
           echo "PORT=${{ secrets.PORT }}" >> .env
           echo "ROOT_API=${{ secrets.ROOT_API }}" >> .env
+          echo "PRIVATE_KEY=${{ secrets.PRIVATE_KEY }}" >> .env
+          echo "PUBLIC_KEY=${{ secrets.PUBLIC_KEY }}" >> .env
           cp .env tests/
           # Add more lines for other secrets, following the same pattern
           #
