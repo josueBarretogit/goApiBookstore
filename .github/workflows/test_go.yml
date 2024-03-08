@@ -12,20 +12,9 @@ on:
 
 jobs:
 
-
   build:
-
-    env:
-
-      PRIVATE_KEY: ${{secrets.PRIVATE_KEY}}
-      JWT_KEY_TESTS: ${{secrets.JWT_KEY_TESTS}}
-      PORT: ${{secrets.PORT}}
-      ROOT_API: ${{secrets.ROOT_API}}
-      DB_URI: ${{secrets.DB_URI}}
-
     runs-on: ubuntu-latest
     steps:
-
     - uses: actions/checkout@v3
 
     - name: Set up Go
@@ -33,7 +22,18 @@ jobs:
       with:
         go-version: '1.21.x'
 
-    
+    - name: Generate .env file
+      run: |
+          echo "DB_URI=${{ secrets.DB_URI }}" >> .env
+          echo "JWT_KEY_TESTS=${{ secrets.JWT_KEY_TESTS }}" >> .env
+          echo "PORT=${{ secrets.PORT }}" >> .env
+          echo "ROOT_API=${{ secrets.ROOT_API }}" >> .env
+          echo "PRIVATE_KEY=${{ secrets.PRIVATE_KEY }}" >> .env
+          echo "PUBLIC_KEY=${{ secrets.PUBLIC_KEY }}" >> .env
+          cp .env tests/
+          ls -f
+          # Add more lines for other secrets, following the same pattern
+          #
     - name: Build
       run: go build -v ./...
 
