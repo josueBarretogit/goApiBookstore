@@ -1,9 +1,8 @@
 package controllers
 
 import (
-	"net/http"
-
 	"api/bookstoreApi/database"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm/clause"
@@ -115,7 +114,7 @@ func (controller *GenericController[T]) Update() gin.HandlerFunc {
 
 		errDatabase := database.DB.Model(&modelToUpdate).Updates(&modelData)
 		if err.Error != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"dbError": errDatabase.Error,
 			})
 			return
