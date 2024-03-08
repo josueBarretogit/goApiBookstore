@@ -31,6 +31,7 @@ jobs:
           echo "PRIVATE_KEY=${{ secrets.PRIVATE_KEY }}" >> .env
           echo "PUBLIC_KEY=${{ secrets.PUBLIC_KEY }}" >> .env
           cp .env tests/
+          echo "${{secrets.PUBLIC_KEY}}" >> public.rsa.pub
           # Add more lines for other secrets, following the same pattern
           #
     - name: Build

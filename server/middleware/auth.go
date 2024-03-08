@@ -13,8 +13,10 @@ import (
 
 
 func VerifyJwt() gin.HandlerFunc {
-
-
+	publicKey , errKey := os.ReadFile("public.rsa.pub")
+	if errKey != nil {
+		panic(errKey.Error())
+	}
 	return func(ctx *gin.Context) {
 		token := ctx.Request.Header.Get("authorization")	
 		if token == "" {
@@ -29,7 +31,7 @@ func VerifyJwt() gin.HandlerFunc {
 				return nil, fmt.Errorf("Unexpected signing method: %v", t.Header["alg"])
 			}
 
-			key, err := jwt.ParseRSAPublicKeyFromPEM([]byte(os.Getenv("PUBLIC_KEY")))
+			key, err := jwt.ParseRSAPublicKeyFromPEM(publicKey)
 			if err != nil {
 				return "", fmt.Errorf("error parsing RSA private key: %v\n", err)
 			}

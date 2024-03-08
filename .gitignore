@@ -28,3 +28,6 @@ go.work
 *.rsa
 
 *.rsa.pub
+
+#Linux build
+main
