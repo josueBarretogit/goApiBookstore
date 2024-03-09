@@ -29,6 +29,8 @@ func SetupServer() *gin.Engine {
 
 	r.Use(gin.Recovery())
 
+	r.StaticFS("/assets" , gin.Dir("public", false))
+
 	for _, modelFormat := range routes.ModelList() {
 		routes.SetupRoutes(modelFormat.ModelName, modelFormat.Controller, r)
 	}

@@ -1,16 +1,18 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type ImageController struct {
 	DirectoryToStoreImagesPath string
+	Module string
 }
 
 func (imageController *ImageController) UploadMultipleImageHadler(c *gin.Context) {
@@ -23,7 +25,7 @@ func (imageController *ImageController) UploadMultipleImageHadler(c *gin.Context
 		return
 	}
 
-	filePath := imageController.DirectoryToStoreImagesPath +  id
+	filePath := imageController.DirectoryToStoreImagesPath + imageController.Module + "/" +  id
 
 	errDirectory := os.MkdirAll(filePath, 0755)
 	if errDirectory != nil {
@@ -38,9 +40,11 @@ func (imageController *ImageController) UploadMultipleImageHadler(c *gin.Context
 	form, _ := c.MultipartForm()
 	files := form.File["files"]
 
+	fileNames := []string{}
+
 	for _, file := range files {
-		filename := filepath.Base(file.Filename)
-		fmt.Println(filePath+ "/" + filename)
+		fileExtension := filepath.Ext(file.Filename)
+		filename := strconv.FormatInt(time.Now().UnixMilli(), 10) + fileExtension
 		errUpload := c.SaveUploadedFile(file, filePath+ "/" + filename)
 
 		if errUpload != nil {
@@ -48,12 +52,16 @@ func (imageController *ImageController) UploadMultipleImageHadler(c *gin.Context
 				"response": "There was an error uploading images",
 				"error":    errUpload.Error(),
 				"success":  false,
+				
 			})
+			return
 		}
+		fileNames = append(fileNames, filename)
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"response": "Imagenes subidas",
-		"pathDirectory": imageController.DirectoryToStoreImagesPath ,
-		"imagenes": files,
+		"pathDirectory": "assets/images/" + imageController.Module + "/" + id ,
+		"imagenes": fileNames,
+		"success" : true,
 	})
 }

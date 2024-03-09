@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"api/bookstoreApi/consts"
 	bookmodels "api/bookstoreApi/models/bookModels"
 	paymentmodels "api/bookstoreApi/models/paymentModels"
 	usermodels "api/bookstoreApi/models/userModels"
@@ -114,5 +115,6 @@ func NewBankAccountControler() *BankAccountController {
 func NewBookImageController(directoryToStoreImages string) *ImageController {
 	return &ImageController{
 		DirectoryToStoreImagesPath: directoryToStoreImages,
+		Module: consts.BookModelName,
 	}
 }

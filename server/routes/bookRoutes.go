@@ -17,7 +17,7 @@ func SetupRoutesBookRoutes(r *gin.Engine) {
 		panic(errDir.Error())
 	}
 
-	imageController := controllers.NewBookImageController(rootDir + "/public" + "/images/" + "books/")
+	imageController := controllers.NewBookImageController(rootDir + "/public" + "/images/")
 
 	{
 		bookRoutes.POST(consts.RouteBookImageUpload, middleware.VerifyJwt(), imageController.UploadMultipleImageHadler)
