@@ -106,7 +106,7 @@ func TestUpdateRole(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	response := w.Result()
-	var body ApiCreateResponse
+	var body ApiUpdateResponse
 
 	errBody := json.Unmarshal(w.Body.Bytes(), &body)
 
