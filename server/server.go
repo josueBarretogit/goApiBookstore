@@ -6,7 +6,7 @@ import (
 	"api/bookstoreApi/server/routes"
 	"flag"
 	"time"
-
+ "github.com/gin-contrib/gzip"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -40,7 +40,7 @@ func SetupServer() *gin.Engine {
 		
 		MaxAge: 12 * time.Hour,
 		}))
-
+  r.Use(gzip.Gzip(gzip.DefaultCompression))
 	r.StaticFS("/assets" , gin.Dir("public", false))
 
 	for _, modelFormat := range routes.ModelList() {

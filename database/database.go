@@ -5,6 +5,7 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type IDB interface {
@@ -31,7 +32,9 @@ func ConnectToDB() (err error) {
 	var error error
 
 	dsn := os.Getenv("DB_URI")
-	DB, error = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	DB, error = gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
 	if error != nil {
 		return error
 	}
