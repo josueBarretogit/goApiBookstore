@@ -5,7 +5,9 @@ import (
 	"api/bookstoreApi/database"
 	"api/bookstoreApi/server/routes"
 	"flag"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,6 +30,16 @@ func SetupServer() *gin.Engine {
 	r := gin.New()
 
 	r.Use(gin.Recovery())
+
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:4000", "http://localhost:3000"},
+		AllowMethods:     []string{"PUT", "PATCH", "POST", "GET" , "DELETE"},
+		AllowHeaders:     []string{"Origin", "authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		
+		MaxAge: 12 * time.Hour,
+		}))
 
 	r.StaticFS("/assets" , gin.Dir("public", false))
 
