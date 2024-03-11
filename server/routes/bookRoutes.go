@@ -11,12 +11,12 @@ import (
 func SetupRoutesBookRoutes(r *gin.Engine) {
 	bookRoutes := r.Group(consts.BookModelName)
 
-
-	imageController := controllers.NewImageController( "book")
+	imageController := controllers.NewImageController("book")
 	bookController := controllers.NewBookController()
 
 	{
-		bookRoutes.POST(consts.RouteBookImageUpload, middleware.VerifyImages,  imageController.UploadMultipleImageHandler)
+		bookRoutes.POST(consts.RouteBookImageUpload, middleware.VerifyImages, imageController.UploadMultipleImageHandler)
+		bookRoutes.GET(consts.RouteBestSellers, bookController.GetBestSellers())
 		bookRoutes.PUT("/assignAuthor/:id", bookController.AssignAuthor())
 	}
 }

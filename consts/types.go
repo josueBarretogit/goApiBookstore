@@ -8,7 +8,7 @@ import (
 const (
 	RoleModelName            = "role"
 	AuthorModelName          = "author"
-	GenreModelName          = "genre"
+	GenreModelName           = "genre"
 	AccountModelName         = "account"
 	CustomerModelName        = "customer"
 	PublisherModelName       = "publisher"
@@ -27,7 +27,8 @@ const (
 	RouteCreate              = "/save"
 	RouteUpdate              = "/update/:id"
 	RouteDelete              = "/delete/:id"
-	RouteBookImageUpload              = "/uploadBookImages/:id"
+	RouteBookImageUpload     = "/uploadBookImages/:id"
+	RouteBestSellers         = "/getBestSellers"
 )
 
 func GetRootDir() (string, error) {

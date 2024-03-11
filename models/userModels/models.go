@@ -9,8 +9,8 @@ import (
 
 type Genre struct {
 	gorm.Model
-	Name       string `json:"name,omitempty"`
-	Books []Book  `json:"books,omitempty"`
+	Name  string `json:"name,omitempty"`
+	Books []Book `json:"books,omitempty"`
 }
 
 type Book struct {
@@ -23,10 +23,10 @@ type Book struct {
 	Language        string                        `json:"language,omitempty"`
 	ISBN            string                        `json:"isbn,omitempty"`
 	Ranking         string                        `json:"ranking,omitempty"`
-	Authors        []*Author `gorm:"many2many:author_book;" `
+	Authors         []*Author                     `gorm:"many2many:author_book;" `
 	OrderDetails    []*paymentmodels.OrderDetails `json:"purchase_details,omitempty"`
-	GenreID uint `json:"genre_id,omitempty"`
-	Genre Genre `json:"genre,omitempty"`
+	GenreID         uint                          `json:"genre_id,omitempty"`
+	Genre           Genre                         `json:"genre_associated,omitempty"`
 }
 
 type Author struct {
@@ -37,7 +37,7 @@ type Author struct {
 	ProfilePictureUrl *string      `json:"profilePictureUrl" `
 	AccountID         uint         `json:"accountid" `
 	Account           Account      `json:"account"`
-	Books        []*Book `gorm:"many2many:author_book;" `
+	Books             []*Book      `gorm:"many2many:author_book;" `
 	Publishers        []*Publisher `gorm:"many2many:author_publisher;" `
 }
 
