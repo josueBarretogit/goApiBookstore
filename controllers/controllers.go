@@ -8,9 +8,6 @@ import (
 
 )
 
-type CustomerController struct {
-	GenericController[usermodels.Customer]
-}
 
 type RoleController struct {
 	GenericController[usermodels.Role]

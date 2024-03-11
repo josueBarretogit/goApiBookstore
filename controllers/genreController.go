@@ -1,9 +1,11 @@
 package controllers
 
-import bookmodels "api/bookstoreApi/models/bookModels"
+import (
+	usermodels "api/bookstoreApi/models/userModels"
+)
 
 type GenreController struct {
-	GenericController[bookmodels.Genre]
+	GenericController[usermodels.Genre]
 }
 
 

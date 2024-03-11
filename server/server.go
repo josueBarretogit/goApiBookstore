@@ -40,6 +40,7 @@ func SetupServer() *gin.Engine {
 		
 		MaxAge: 12 * time.Hour,
 		}))
+
   r.Use(gzip.Gzip(gzip.DefaultCompression))
 	r.StaticFS("/assets" , gin.Dir("public", false))
 
@@ -51,5 +52,6 @@ func SetupServer() *gin.Engine {
 	routes.SetupRoutesAuthor(r)
 	routes.SetupRoutesPublisher(r)
 	routes.SetupRoutesBookRoutes(r)
+	routes.SetupRoutesCustomer(r)
 	return r
 }

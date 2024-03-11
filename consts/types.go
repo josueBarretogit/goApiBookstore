@@ -8,6 +8,7 @@ import (
 const (
 	RoleModelName            = "role"
 	AuthorModelName          = "author"
+	GenreModelName          = "genre"
 	AccountModelName         = "account"
 	CustomerModelName        = "customer"
 	PublisherModelName       = "publisher"

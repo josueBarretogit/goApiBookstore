@@ -14,6 +14,7 @@ func ModelList() []ModelListFormat {
 	modelList := []ModelListFormat{
 		{ModelName: consts.RoleModelName, Controller: controllers.NewRoleController()},
 		{ModelName: consts.AuthorModelName, Controller: controllers.NewAuthorController()},
+		{ModelName: consts.GenreModelName, Controller: controllers.NewGenreController()},
 		{ModelName: consts.AccountModelName, Controller: controllers.NewAccountController()},
 		{ModelName: consts.CustomerModelName, Controller: controllers.NewCustomerController()},
 		{ModelName: consts.PublisherModelName, Controller: controllers.NewPublisherController()},

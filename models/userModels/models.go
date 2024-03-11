@@ -7,6 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
+type Genre struct {
+	gorm.Model
+	Name       string `json:"name,omitempty"`
+	Books []Book  `json:"books,omitempty"`
+}
+
 type Book struct {
 	gorm.Model
 	Title           string                        `json:"title,omitempty"`
@@ -14,13 +20,13 @@ type Book struct {
 	Description     string                        `json:"description,omitempty"`
 	Rating          *int                          `json:"rating,omitempty"`
 	PublicationDate time.Time                     `json:"publication_date,omitempty"`
-	Genre           string                        `json:"genre,omitempty"`
 	Language        string                        `json:"language,omitempty"`
 	ISBN            string                        `json:"isbn,omitempty"`
 	Ranking         string                        `json:"ranking,omitempty"`
 	Authors        []*Author `gorm:"many2many:author_book;" `
 	OrderDetails    []*paymentmodels.OrderDetails `json:"purchase_details,omitempty"`
 	GenreID uint `json:"genre_id,omitempty"`
+	Genre Genre `json:"genre,omitempty"`
 }
 
 type Author struct {

@@ -37,7 +37,3 @@ type AudioBookFormat struct {
 
 
 
-type Genre struct {
-	gorm.Model
-	Name       float64 `json:"name,omitempty"`
-}

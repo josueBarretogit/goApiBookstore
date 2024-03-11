@@ -18,7 +18,7 @@ func Migrate() error {
 		usermodels.Author{},
 		usermodels.Customer{},
 		usermodels.Publisher{},
-		bookmodels.Genre{},
+		usermodels.Genre{},
 		usermodels.Book{},
 		bookmodels.HardCoverFormat{},
 		bookmodels.DigitalFormat{},
