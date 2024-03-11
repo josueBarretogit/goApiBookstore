@@ -34,6 +34,7 @@ func ConnectToDB() (err error) {
 	dsn := os.Getenv("DB_URI")
 	DB, error = gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
+		SkipDefaultTransaction: true,
 	})
 	if error != nil {
 		return error

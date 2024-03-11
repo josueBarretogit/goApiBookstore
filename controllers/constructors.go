@@ -5,6 +5,7 @@ import (
 	bookmodels "api/bookstoreApi/models/bookModels"
 	paymentmodels "api/bookstoreApi/models/paymentModels"
 	usermodels "api/bookstoreApi/models/userModels"
+	"api/bookstoreApi/services"
 )
 
 func NewPublisherController() *PublisherController {
@@ -43,7 +44,7 @@ func NewCustomerController() *CustomerController {
 }
 
 func NewBookController() *BookController {
-	generiController := NewGenericController[bookmodels.Book]("PurchaseDetails")
+	generiController := NewGenericController[usermodels.Book]("Author")
 	return &BookController{
 		GenericController: *generiController,
 	}
@@ -112,9 +113,17 @@ func NewBankAccountControler() *BankAccountController {
 	}
 }
 
-func NewBookImageController(directoryToStoreImages string) *ImageController {
+func NewBookImageController(directoryToStoreImages string, imageService services.IImageService) *ImageController {
 	return &ImageController{
 		DirectoryToStoreImagesPath: directoryToStoreImages,
 		Module: consts.BookModelName,
+		ImageService: imageService,
+	}
+}
+
+func NewGenreController() *GenreController {
+	generiController := NewGenericController[bookmodels.Genre]("Books")
+	return &GenreController{
+		GenericController: *generiController,
 	}
 }

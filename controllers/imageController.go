@@ -1,6 +1,10 @@
 package controllers
 
 import (
+	"api/bookstoreApi/services"
+	"bytes"
+	"image/jpeg"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -13,9 +17,10 @@ import (
 type ImageController struct {
 	DirectoryToStoreImagesPath string
 	Module string
+	ImageService services.IImageService
 }
 
-func (imageController *ImageController) UploadMultipleImageHadler(c *gin.Context) {
+func (imageController *ImageController) UploadMultipleImageHandler(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
@@ -37,6 +42,7 @@ func (imageController *ImageController) UploadMultipleImageHadler(c *gin.Context
 		return
 	}
 
+
 	form, _ := c.MultipartForm()
 	files := form.File["files"]
 
@@ -45,11 +51,50 @@ func (imageController *ImageController) UploadMultipleImageHadler(c *gin.Context
 	for _, file := range files {
 		fileExtension := filepath.Ext(file.Filename)
 		filename := strconv.FormatInt(time.Now().UnixMilli(), 10) + fileExtension
-		errUpload := c.SaveUploadedFile(file, filePath+ "/" + filename)
+
+		openedFile, errOpen := file.Open()
+
+		if errOpen != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"response": "There was an error opening the file",
+				"error":    errOpen.Error(),
+				"success":  false,
+			})
+			return
+		}
+
+
+		fileRead , errFileRead := io.ReadAll(openedFile)
+
+		if errFileRead != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"response": "There was an error reading opened images",
+				"error":    errFileRead.Error(),
+				"success":  false,
+			})
+			return
+		}
+
+		imageToCompress, errDecoding := jpeg.Decode(bytes.NewReader(fileRead))
+
+		if errDecoding != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"response": "There was an error decoding images",
+				"error":    errDecoding.Error(),
+				"success":  false,
+			})
+			return
+		}
+
+
+		compressedImage := imageController.ImageService.CompressImage(imageToCompress)
+
+		errUpload := imageController.ImageService.StoreImage(compressedImage, filePath+ "/" + filename)
+
 
 		if errUpload != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"response": "There was an error uploading images",
+				"response": "There was an error doing all those things images",
 				"error":    errUpload.Error(),
 				"success":  false,
 				
@@ -64,4 +109,5 @@ func (imageController *ImageController) UploadMultipleImageHadler(c *gin.Context
 		"imagenes": fileNames,
 		"success" : true,
 	})
+	return
 }

@@ -11,6 +11,12 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+
+type AccountController struct {
+	GenericController[usermodels.Account]
+}
+
+
 func (controller *AccountController) LogIn() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var payload usermodels.Account

@@ -12,5 +12,6 @@ func SetupRoutesAuthor(r *gin.Engine) {
 	authorController := controllers.NewAuthorController()
 	{
 		authorRoutes.PUT("/assignPublisher/:id", authorController.AssignPublisher())
+		authorRoutes.PUT("/assignBook/:id", authorController.AssignBook())
 	}
 }

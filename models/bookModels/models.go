@@ -1,30 +1,10 @@
 package bookmodels
 
 import (
-	"time"
-
-	paymentmodels "api/bookstoreApi/models/paymentModels"
-	usermodels "api/bookstoreApi/models/userModels"
 
 	"gorm.io/gorm"
 )
 
-// --TODO: create table Genre
-type Book struct {
-	gorm.Model
-	Title           string                        `json:"title,omitempty"`
-	CoverPhotoUrl   string                        `json:"cover_photo_url,omitempty"`
-	Description     string                        `json:"description,omitempty"`
-	Rating          *int                          `json:"rating,omitempty"`
-	PublicationDate time.Time                     `json:"publication_date,omitempty"`
-	Genre           string                        `json:"genre,omitempty"`
-	Language        string                        `json:"language,omitempty"`
-	ISBN            string                        `json:"isbn,omitempty"`
-	Ranking         string                        `json:"ranking,omitempty"`
-	AuthorID        uint                          `json:"author_id,omitempty"`
-	Author          usermodels.Author             `json:"author,omitempty"`
-	OrderDetails    []*paymentmodels.OrderDetails `json:"purchase_details,omitempty"`
-}
 
 type DigitalFormat struct {
 	gorm.Model
@@ -52,4 +32,12 @@ type AudioBookFormat struct {
 	Duration    string  `json:"duration,omitempty"`
 	ProgramType string  `json:"program_type,omitempty"`
 	BookID      *uint   `json:"book_id,omitempty"`
+}
+
+
+
+
+type Genre struct {
+	gorm.Model
+	Name       float64 `json:"name,omitempty"`
 }

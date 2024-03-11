@@ -148,3 +148,38 @@ func (controller *GenericController[T]) Delete() gin.HandlerFunc {
 		})
 	}
 }
+
+func AssignManyToManyRelation[T interface{}, K interface{}](relation string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var modelToUpdate T
+		var modelData K
+
+		id := c.Params.ByName("id")
+		err := database.DB.First(&modelToUpdate, id)
+		if err.Error != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"dbError": err.Error,
+			})
+			return
+		}
+
+		errJson := c.BindJSON(&modelData)
+		if errJson != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"error": errJson.Error,
+			})
+			return
+		}
+
+		errDatabase := database.DB.Model(&modelToUpdate).Association(relation).Append(&modelData)
+		if err.Error != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"dbError": errDatabase.Error,
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"updated": modelData,
+		})
+	}
+}

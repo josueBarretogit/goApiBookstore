@@ -2,9 +2,26 @@ package usermodels
 
 import (
 	paymentmodels "api/bookstoreApi/models/paymentModels"
+	"time"
 
 	"gorm.io/gorm"
 )
+
+type Book struct {
+	gorm.Model
+	Title           string                        `json:"title,omitempty"`
+	CoverPhotoUrl   string                        `json:"cover_photo_url,omitempty"`
+	Description     string                        `json:"description,omitempty"`
+	Rating          *int                          `json:"rating,omitempty"`
+	PublicationDate time.Time                     `json:"publication_date,omitempty"`
+	Genre           string                        `json:"genre,omitempty"`
+	Language        string                        `json:"language,omitempty"`
+	ISBN            string                        `json:"isbn,omitempty"`
+	Ranking         string                        `json:"ranking,omitempty"`
+	Authors        []*Author `gorm:"many2many:author_book;" `
+	OrderDetails    []*paymentmodels.OrderDetails `json:"purchase_details,omitempty"`
+	GenreID uint `json:"genre_id,omitempty"`
+}
 
 type Author struct {
 	gorm.Model
@@ -14,6 +31,7 @@ type Author struct {
 	ProfilePictureUrl *string      `json:"profilePictureUrl" `
 	AccountID         uint         `json:"accountid" `
 	Account           Account      `json:"account"`
+	Books        []*Book `gorm:"many2many:author_book;" `
 	Publishers        []*Publisher `gorm:"many2many:author_publisher;" `
 }
 
