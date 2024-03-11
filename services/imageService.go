@@ -39,8 +39,6 @@ func (imageService *ImageService) StoreImage(image image.Image, destination stri
       return err
    }
 
-	defer f.Close()
-
    err = jpeg.Encode(f, image, &jpeg.Options{Quality: 60})
    if err != nil {
 		return err

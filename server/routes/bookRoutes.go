@@ -3,7 +3,6 @@ package routes
 import (
 	"api/bookstoreApi/consts"
 	"api/bookstoreApi/controllers"
-	"api/bookstoreApi/server/middleware"
 	"api/bookstoreApi/services"
 
 	"github.com/gin-gonic/gin"
@@ -24,7 +23,7 @@ func SetupRoutesBookRoutes(r *gin.Engine) {
 	bookController := controllers.NewBookController()
 
 	{
-		bookRoutes.POST(consts.RouteBookImageUpload, middleware.VerifyJwt(), imageController.UploadMultipleImageHandler)
+		bookRoutes.POST(consts.RouteBookImageUpload,  imageController.UploadMultipleImageHandler)
 		bookRoutes.PUT("/assignAuthor/:id", bookController.AssignAuthor())
 	}
 }

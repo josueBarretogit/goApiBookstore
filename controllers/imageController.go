@@ -87,9 +87,8 @@ func (imageController *ImageController) UploadMultipleImageHandler(c *gin.Contex
 		}
 
 
-		compressedImage := imageController.ImageService.CompressImage(imageToCompress)
 
-		errUpload := imageController.ImageService.StoreImage(compressedImage, filePath+ "/" + filename)
+		errUpload := imageController.ImageService.StoreImage(imageToCompress, filePath+ "/" + filename)
 
 
 		if errUpload != nil {
