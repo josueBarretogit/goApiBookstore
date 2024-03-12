@@ -28,9 +28,14 @@ const (
 	RouteUpdate              = "/update/:id"
 	RouteDelete              = "/delete/:id"
 	RouteBookImageUpload     = "/uploadBookImages/:id"
-	RouteBestSellers         = "/getBestSellers"
+	RouteBestSellers         = "/bestSellers"
 )
 
 func GetRootDir() (string, error) {
 	return filepath.Abs(filepath.Dir(os.Args[0]))
 }
+
+const (
+	ErrorCodeBadData  = "badData"
+	ErrorCodeDatabase = "dbError"
+)

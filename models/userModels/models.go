@@ -1,6 +1,7 @@
 package usermodels
 
 import (
+	bookmodels "api/bookstoreApi/models/bookModels"
 	paymentmodels "api/bookstoreApi/models/paymentModels"
 	"time"
 
@@ -27,6 +28,9 @@ type Book struct {
 	OrderDetails    []*paymentmodels.OrderDetails `json:"purchase_details,omitempty"`
 	GenreID         uint                          `json:"genre_id,omitempty"`
 	Genre           Genre                         `json:"genre_associated,omitempty"`
+	AudioFormat bookmodels.AudioBookFormat
+	HardCoverFormat bookmodels.HardCoverFormat
+	DigitalFormat bookmodels.DigitalFormat
 }
 
 type Author struct {

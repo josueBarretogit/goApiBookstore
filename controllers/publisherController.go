@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"api/bookstoreApi/consts"
 	usermodels "api/bookstoreApi/models/userModels"
 
 	"github.com/gin-gonic/gin"
@@ -11,5 +12,5 @@ type PublisherController struct {
 }
 
 func (controller *PublisherController) AssignAuthor() gin.HandlerFunc {
-	return AssignManyToManyRelation[usermodels.Publisher, usermodels.Author](controller.RelationName)
+	return AssignManyToManyRelation[usermodels.Publisher, usermodels.Author](controller.RelationName, consts.PublisherModelName)
 }

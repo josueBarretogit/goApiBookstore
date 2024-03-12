@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"api/bookstoreApi/consts"
 	"api/bookstoreApi/database"
 	"net/http"
 
@@ -18,11 +19,13 @@ type IController interface {
 
 type GenericController[T interface{}] struct {
 	RelationName string
+	ModelName    string
 }
 
-func NewGenericController[T interface{}](relation string) *GenericController[T] {
+func NewGenericController[T interface{}](relation string, modelName string) *GenericController[T] {
 	return &GenericController[T]{
 		RelationName: relation,
+		ModelName:    modelName,
 	}
 }
 
@@ -34,8 +37,9 @@ func (controller *GenericController[T]) Create() gin.HandlerFunc {
 
 		if errPayload != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"error":   "Received bad data",
-				"details": errPayload,
+				"code":    consts.ErrorCodeBadData,
+				"target":  controller.ModelName,
+				"details": errPayload.Error(),
 			})
 			return
 		}
@@ -43,7 +47,9 @@ func (controller *GenericController[T]) Create() gin.HandlerFunc {
 		err := database.DB.Create(&model)
 		if err.Error != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"dbError": err.Error,
+				"code":    consts.ErrorCodeDatabase,
+				"target":  controller.ModelName,
+				"details": err.Error.Error(),
 			})
 			return
 		}
@@ -60,11 +66,12 @@ func (controller *GenericController[T]) FindAll() gin.HandlerFunc {
 		err := database.DB.Preload(clause.Associations).Order("ID desc").Find(&models)
 		if err.Error != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"dbError": err.Error,
+				"code":    consts.ErrorCodeDatabase,
+				"target":  controller.ModelName,
+				"details": err.Error.Error(),
 			})
 			return
 		}
-
 		c.JSON(http.StatusOK, gin.H{
 			"models": models,
 		})
@@ -80,7 +87,9 @@ func (controller *GenericController[T]) FindOneBy() gin.HandlerFunc {
 		err := database.DB.Limit(1).Preload(clause.Associations).Find(&model, id)
 		if err.Error != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"dbError": err.Error,
+				"code":    consts.ErrorCodeDatabase,
+				"target":  controller.ModelName,
+				"details": err.Error.Error(),
 			})
 			return
 		}
@@ -100,14 +109,18 @@ func (controller *GenericController[T]) Update() gin.HandlerFunc {
 		err := database.DB.First(&modelToUpdate, id)
 		if err.Error != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"dbError": err.Error,
+				"code":    consts.ErrorCodeDatabase,
+				"target":  controller.ModelName,
+				"details": err.Error.Error(),
 			})
 			return
 		}
 		errJson := c.BindJSON(&modelData)
 		if errJson != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"error": errJson.Error,
+				"code":    consts.ErrorCodeDatabase,
+				"target":  controller.ModelName,
+				"details": errJson.Error(),
 			})
 			return
 		}
@@ -115,12 +128,15 @@ func (controller *GenericController[T]) Update() gin.HandlerFunc {
 		errDatabase := database.DB.Model(&modelToUpdate).Updates(&modelData)
 		if err.Error != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"dbError": errDatabase.Error,
+				"code":    consts.ErrorCodeDatabase,
+				"target":  controller.ModelName,
+				"details": errDatabase.Error.Error(),
 			})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{
 			"updated": modelToUpdate,
+			"success": true,
 		})
 	}
 }
@@ -131,25 +147,30 @@ func (controller *GenericController[T]) Delete() gin.HandlerFunc {
 		id := c.Params.ByName("id")
 		err := database.DB.First(&modelToDelete, id)
 		if err.Error != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"dbError": err.Error,
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"code":    consts.ErrorCodeDatabase,
+				"target":  controller.ModelName,
+				"details": err.Error.Error(),
 			})
 			return
 		}
 		errDatabase := database.DB.Delete(&modelToDelete)
 		if err.Error != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"dbError": errDatabase.Error,
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"code":    consts.ErrorCodeDatabase,
+				"target":  controller.ModelName,
+				"details": errDatabase.Error.Error(),
 			})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{
 			"deleted": modelToDelete,
+			"success": true,
 		})
 	}
 }
 
-func AssignManyToManyRelation[T interface{}, K interface{}](relation string) gin.HandlerFunc {
+func AssignManyToManyRelation[T interface{}, K interface{}](relation string, target string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var modelToUpdate T
 		var modelData K
@@ -157,8 +178,10 @@ func AssignManyToManyRelation[T interface{}, K interface{}](relation string) gin
 		id := c.Params.ByName("id")
 		err := database.DB.First(&modelToUpdate, id)
 		if err.Error != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"dbError": err.Error,
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"code":    consts.ErrorCodeDatabase,
+				"target":  target,
+				"details": err.Error.Error(),
 			})
 			return
 		}
@@ -166,20 +189,25 @@ func AssignManyToManyRelation[T interface{}, K interface{}](relation string) gin
 		errJson := c.BindJSON(&modelData)
 		if errJson != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"error": errJson.Error,
+				"code":    consts.ErrorCodeBadData,
+				"target":  target,
+				"details": errJson.Error(),
 			})
 			return
 		}
 
 		errDatabase := database.DB.Model(&modelToUpdate).Association(relation).Append(&modelData)
 		if err.Error != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"dbError": errDatabase.Error,
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"code":    consts.ErrorCodeDatabase,
+				"target":  target,
+				"details": errDatabase.Error(),
 			})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{
 			"updated": modelData,
+			"success": true,
 		})
 	}
 }

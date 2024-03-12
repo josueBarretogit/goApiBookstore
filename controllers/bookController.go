@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"api/bookstoreApi/consts"
 	"api/bookstoreApi/database"
 	usermodels "api/bookstoreApi/models/userModels"
 	"net/http"
@@ -13,7 +14,7 @@ type BookController struct {
 }
 
 func (controller *BookController) AssignAuthor() gin.HandlerFunc {
-	return AssignManyToManyRelation[usermodels.Book, usermodels.Author]("Authors")
+	return AssignManyToManyRelation[usermodels.Book, usermodels.Author]("Authors", consts.BookModelName)
 }
 
 type BestSellerBooks struct {
@@ -40,13 +41,48 @@ func (controller *BookController) GetBestSellers() gin.HandlerFunc {
 
 		if err.Error != nil {
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"dbError": err.Error,
+				"code" : consts.ErrorCodeDatabase,
+				"details": err.Error.Error(),
+				"target" : consts.BookModelName,
 			})
 			return
 		}
 
 		ctx.JSON(http.StatusOK, gin.H{
-			"mostSelledBooks": mostSelledBooks,
+			"books": mostSelledBooks,
 		})
+
+	}
+}
+
+type Formats struct {
+	ID uint `json:"id"`
+	Price  float64 `json:"price"`
+
+}
+
+func (controller *BookController) GetBookFormats() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var bookWithFormat usermodels.Book
+
+		id := ctx.Params.ByName("id")
+
+
+		err := database.DB.Model(&usermodels.Book{}).Joins("AudioFormat").Joins("HardCoverFormat").Joins("DigitalFormat").Where("books.id = ?", id).Find(&bookWithFormat)
+
+		if err.Error != nil {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"code" : consts.ErrorCodeDatabase,
+				"error": err.Error.Error(),
+				"target" : consts.BookModelName,
+			})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{
+			"formats": bookWithFormat,
+		})
+
+
 	}
 }

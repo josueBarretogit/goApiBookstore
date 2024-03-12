@@ -17,6 +17,7 @@ func SetupRoutesBookRoutes(r *gin.Engine) {
 	{
 		bookRoutes.POST(consts.RouteBookImageUpload, middleware.VerifyImages, imageController.UploadMultipleImageHandler)
 		bookRoutes.GET(consts.RouteBestSellers, bookController.GetBestSellers())
+		bookRoutes.GET("/formats/:id", bookController.GetBookFormats())
 		bookRoutes.PUT("/assignAuthor/:id", bookController.AssignAuthor())
 	}
 }

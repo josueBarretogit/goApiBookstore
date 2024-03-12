@@ -1,21 +1,20 @@
 package controllers
 
 import (
-	"net/http"
-
+	"api/bookstoreApi/consts"
 	"api/bookstoreApi/database"
 	"api/bookstoreApi/helpers"
+	"net/http"
+
 	usermodels "api/bookstoreApi/models/userModels"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-
 type AccountController struct {
 	GenericController[usermodels.Account]
 }
-
 
 func (controller *AccountController) LogIn() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
@@ -88,7 +87,7 @@ func (controller *AccountController) LogIn() gin.HandlerFunc {
 }
 
 func (controller *AccountController) AssignRole() gin.HandlerFunc {
-	return AssignManyToManyRelation[usermodels.Account, usermodels.Role](controller.RelationName)
+	return AssignManyToManyRelation[usermodels.Account, usermodels.Role](controller.RelationName, consts.AccountModelName)
 }
 
 func (controller *AccountController) Register() gin.HandlerFunc {
