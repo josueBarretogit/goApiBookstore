@@ -61,8 +61,6 @@ type FormatDTO struct {
 	Price  float64 `json:"price"`
 }
 
-
-
 func (controller *BookController) GetBookFormats() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var digitalFormat FormatDTO
