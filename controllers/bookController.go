@@ -55,23 +55,30 @@ func (controller *BookController) GetBestSellers() gin.HandlerFunc {
 	}
 }
 
-type Formats struct {
+
+type FormatDTO struct {
 	ID uint `json:"id"`
 	Price  float64 `json:"price"`
-
 }
+
+
 
 func (controller *BookController) GetBookFormats() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var bookWithFormat usermodels.Book
+		var digitalFormat FormatDTO
+		var audioFormat FormatDTO
+		var hardCover FormatDTO
 
 		id := ctx.Params.ByName("id")
 
-
-		err := database.DB.Model(&usermodels.Book{}).Joins("AudioFormat").Joins("HardCoverFormat").Joins("DigitalFormat").Where("books.id = ?", id).Find(&bookWithFormat)
+		err := database.DB.Table("books").
+			Select("audio_book_formats.price, audio_book_formats.id").
+			Joins("LEFT JOIN audio_book_formats ON audio_book_formats.book_id = books.id").
+			Where("books.id = ?", id).
+			Scan(&audioFormat)
 
 		if err.Error != nil {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"code" : consts.ErrorCodeDatabase,
 				"error": err.Error.Error(),
 				"target" : consts.BookModelName,
@@ -79,10 +86,42 @@ func (controller *BookController) GetBookFormats() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, gin.H{
-			"formats": bookWithFormat,
-		})
+		err = database.DB.Table("books").
+			Select("digital_formats.price, digital_formats.id").
+			Joins("LEFT JOIN digital_formats ON digital_formats.book_id = books.id").
+			Where("books.id = ?", id).
+			Scan(&digitalFormat)
 
+		if err.Error != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"code" : consts.ErrorCodeDatabase,
+				"error": err.Error.Error(),
+				"target" : consts.BookModelName,
+			})
+			return
+		}
+
+		err = database.DB.Table("books").
+			Select("hard_cover_formats.price, hard_cover_formats.id").
+			Joins("LEFT JOIN hard_cover_formats ON hard_cover_formats.book_id = books.id").
+			Where("books.id = ?", id).
+			Scan(&hardCover)
+
+		if err.Error != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"code" : consts.ErrorCodeDatabase,
+				"error": err.Error.Error(),
+				"target" : consts.BookModelName,
+			})
+			return
+		}
+
+
+		ctx.JSON(http.StatusOK, gin.H{
+			"digital": digitalFormat,
+			"audio": audioFormat,
+			"hardCover": hardCover,
+		})
 
 	}
 }
