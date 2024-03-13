@@ -6,8 +6,8 @@ import (
 	"api/bookstoreApi/server/middleware"
 	"time"
 
-	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-contrib/cache"
+	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,6 +22,7 @@ func SetupRoutesBookRoutes(r *gin.Engine) {
 		bookRoutes.POST(consts.RouteBookImageUpload, middleware.VerifyImages, imageController.UploadMultipleImageHandler)
 		bookRoutes.GET(consts.RouteBestSellers, cache.CachePage(store, time.Minute, bookController.GetBestSellers()))
 		bookRoutes.GET("/formats/:id", cache.CachePage(store, time.Minute, bookController.GetBookFormats()))
+		bookRoutes.GET("/reviews/:id", bookController.GetReviews())
 		bookRoutes.PUT("/assignAuthor/:id", bookController.AssignAuthor())
 	}
 }

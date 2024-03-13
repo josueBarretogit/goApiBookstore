@@ -41,9 +41,9 @@ func (controller *BookController) GetBestSellers() gin.HandlerFunc {
 
 		if err.Error != nil {
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"code" : consts.ErrorCodeDatabase,
+				"code":    consts.ErrorCodeDatabase,
 				"details": err.Error.Error(),
-				"target" : consts.BookModelName,
+				"target":  consts.BookModelName,
 			})
 			return
 		}
@@ -51,14 +51,12 @@ func (controller *BookController) GetBestSellers() gin.HandlerFunc {
 		ctx.JSON(http.StatusOK, gin.H{
 			"books": mostSelledBooks,
 		})
-
 	}
 }
 
-
 type FormatDTO struct {
-	ID uint `json:"id"`
-	Price  float64 `json:"price"`
+	ID    uint    `json:"id"`
+	Price float64 `json:"price"`
 }
 
 func (controller *BookController) GetBookFormats() gin.HandlerFunc {
@@ -68,7 +66,6 @@ func (controller *BookController) GetBookFormats() gin.HandlerFunc {
 		var hardCover FormatDTO
 
 		id := ctx.Params.ByName("id")
-
 		err := database.DB.Table("books").
 			Select("audio_book_formats.price, audio_book_formats.id").
 			Joins("LEFT JOIN audio_book_formats ON audio_book_formats.book_id = books.id").
@@ -77,9 +74,9 @@ func (controller *BookController) GetBookFormats() gin.HandlerFunc {
 
 		if err.Error != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"code" : consts.ErrorCodeDatabase,
-				"error": err.Error.Error(),
-				"target" : consts.BookModelName,
+				"code":   consts.ErrorCodeDatabase,
+				"error":  err.Error.Error(),
+				"target": consts.BookModelName,
 			})
 			return
 		}
@@ -92,9 +89,9 @@ func (controller *BookController) GetBookFormats() gin.HandlerFunc {
 
 		if err.Error != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"code" : consts.ErrorCodeDatabase,
-				"error": err.Error.Error(),
-				"target" : consts.BookModelName,
+				"code":   consts.ErrorCodeDatabase,
+				"error":  err.Error.Error(),
+				"target": consts.BookModelName,
 			})
 			return
 		}
@@ -107,19 +104,59 @@ func (controller *BookController) GetBookFormats() gin.HandlerFunc {
 
 		if err.Error != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"code" : consts.ErrorCodeDatabase,
-				"error": err.Error.Error(),
-				"target" : consts.BookModelName,
+				"code":   consts.ErrorCodeDatabase,
+				"error":  err.Error.Error(),
+				"target": consts.BookModelName,
 			})
 			return
 		}
 
-
 		ctx.JSON(http.StatusOK, gin.H{
-			"digital": digitalFormat,
-			"audio": audioFormat,
+			"digital":   digitalFormat,
+			"audio":     audioFormat,
 			"hardCover": hardCover,
 		})
+	}
+}
 
+type GetReviewDto struct {
+	Rating     int    `json:"rating,omitempty"`
+	Title      string `json:"title,omitempty"`
+	BodyReview string `json:"body_review,omitempty"`
+	Customer   struct {
+		ProfilePictureUrl string `json:"profile_picture_url"`
+		Account           struct {
+			Username string `json:"username"`
+		} `json:"account" gorm:"embedded"`
+	} `json:"customer" gorm:"embedded"`
+}
+
+func (controller *BookController) GetReviews() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var reviews []GetReviewDto
+
+		sl := "reviews.rating as rating, reviews.title as title, reviews.body_review as body_review, accounts.username as username, customers.profile_picture_url as profile_picture_url"
+
+		id := ctx.Params.ByName("id")
+		err := database.DB.Table("books").
+			Select(sl).
+			Joins("INNER JOIN reviews on reviews.book_id = books.id").
+			Joins("INNER JOIN customers on reviews.customer_id = customers.id").
+			Joins("INNER JOIN accounts on accounts.id = customers.account_id").
+			Where("books.id = ?", id).
+			Scan(&reviews)
+
+		if err.Error != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"code":   consts.ErrorCodeDatabase,
+				"error":  err.Error.Error(),
+				"target": consts.BookModelName,
+			})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{
+			"reviews": reviews,
+		})
 	}
 }
