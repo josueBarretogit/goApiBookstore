@@ -206,8 +206,8 @@ func AssignManyToManyRelation[T interface{}, K interface{}](relation string, tar
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{
-			"updated": modelData,
-			"success": true,
+			"assigned": modelData,
+			"success":  true,
 		})
 	}
 }
