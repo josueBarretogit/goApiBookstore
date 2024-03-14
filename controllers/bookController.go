@@ -4,7 +4,10 @@ import (
 	"api/bookstoreApi/consts"
 	"api/bookstoreApi/database"
 	usermodels "api/bookstoreApi/models/userModels"
+	"context"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -162,73 +165,85 @@ func (controller *BookController) GetReviews() gin.HandlerFunc {
 	}
 }
 
-type Authors struct {
-	ID       uint
+type AuthorsDTO struct {
+	ID       int    `json:"id"`
 	Name     string `json:"name" `
 	Lastname string `json:"lastname"`
 }
 
-type SearchBookDTO struct {
-	ID              uint      `json:"id"`
-	Title           string    `json:"title"`
-	Rating          int       `json:"rating"`
-	CoverPhotoUrl   string    `json:"cover_photo_url"`
-	PublicationDate time.Time `json:"publication_date,omitempty"`
-}
-
-type SearchedBook struct {
-	Book SearchBookDTO
-	Authors []Authors
+type BookDTO struct {
+	ID              int          `json:"id"`
+	Title           string       `json:"title"`
+	Rating          int          `json:"rating"`
+	CoverPhotoUrl   string       `json:"cover_photo_url"`
+	PublicationDate time.Time    `json:"publication_date,omitempty"`
+	Authors         []AuthorsDTO `json:"authors"`
 }
 
 func (controller *BookController) SearchBook() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var books []SearchBookDTO
-		var searchedBooks [5]SearchedBook
+		searchTerm := strings.Replace(ctx.Param("searchTerm"), "/", "", -1)
+		fmt.Println(searchTerm)
+		var booksPg []BookDTO
 
-		err := database.DB.Table("books").
-			Select("books.id as id, books.title as title, books.rating as rating, books.cover_photo_url as cover_photo_url, books.publication_date as publication_date").
-			Order("books.id desc").
-			Limit(5).
-			Scan(&books)
+		selectSentence := `
+            SELECT 
+                books.id as id, 
+                books.title as title, 
+                books.rating as rating , 
+                books.cover_photo_url as cover_photo_url, 
+                books.publication_date as publication_date,
+                ARRAY_AGG(authors.id) as author_ids,
+                ARRAY_AGG(authors.name) as author_names,
+                ARRAY_AGG(authors.lastname) as author_lastnames
+            FROM 
+                books
+            INNER JOIN 
+                author_book ON author_book.book_id = books.id
+            INNER JOIN 
+                authors ON author_book.author_id = authors.id`
+		selectSentence += ` WHERE authors.name LIKE ` + `'%` + searchTerm + `%'` + ` GROUP BY books.id`
 
-		if err.Error != nil {
+		rows, err := database.Pg.Query(context.Background(), selectSentence)
+		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"code":   consts.ErrorCodeDatabase,
-				"target": controller.ModelName,
-				"error":  err.Error.Error(),
+				"error":  err.Error(),
+				"target": consts.BookModelName,
 			})
 			return
 		}
+		defer rows.Close()
 
+		for rows.Next() {
+			var book BookDTO
+			var authorIDs []int
+			var authorNames []string
+			var authorLastNames []string
 
-		for index, book := range books {
-			var authorsAssociated []Authors
-			err = database.DB.Table("authors").
-				Select("authors.name as name, authors.id as id").
-				Joins("INNER JOIN author_book ON authors.id = author_book.author_id ").
-				Joins("INNER JOIN books ON books.id = author_book.book_id ").
-				Where("books.id = ?" , book.ID).
-				Find(&authorsAssociated)
-
-			if err.Error != nil {
+			err = rows.Scan(&book.ID, &book.Title, &book.Rating, &book.CoverPhotoUrl, &book.PublicationDate, &authorIDs, &authorNames, &authorLastNames)
+			if err != nil {
 				ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 					"code":   consts.ErrorCodeDatabase,
-					"target": controller.ModelName,
-					"error":  err.Error.Error(),
+					"error":  err.Error(),
+					"target": consts.BookModelName,
 				})
 				return
 			}
-			searchedBooks[index].Authors = authorsAssociated
-			searchedBooks[index].Book.ID = book.ID
-			searchedBooks[index].Book.Title= book.Title
-			searchedBooks[index].Book.Rating = book.Rating
-			
+
+			for i, id := range authorIDs {
+				book.Authors = append(book.Authors, AuthorsDTO{
+					ID:       id,
+					Name:     authorNames[i],
+					Lastname: authorLastNames[i],
+				})
+			}
+
+			booksPg = append(booksPg, book)
 		}
 
 		ctx.JSON(http.StatusOK, gin.H{
-			"books": searchedBooks,
-			
+			"books": booksPg,
 		})
 	}
 }
