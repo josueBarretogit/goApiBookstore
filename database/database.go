@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -29,7 +29,7 @@ type Database struct {
 
 var DB *gorm.DB
 
-var Pg *pgx.Conn
+var Pg *pgxpool.Pool
 
 func ConnectToDB() (err error) {
 	var error error
@@ -43,7 +43,7 @@ func ConnectToDB() (err error) {
 		return error
 	}
 
-	Pg, err = pgx.Connect(context.Background(), os.Getenv("DB_URI"))
+	Pg, err = pgxpool.New(context.Background(), dsn)
 	if err != nil {
 		return error
 	}

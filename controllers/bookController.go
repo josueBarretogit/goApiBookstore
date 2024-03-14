@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -176,15 +175,32 @@ type BookDTO struct {
 	Title           string       `json:"title"`
 	Rating          int          `json:"rating"`
 	CoverPhotoUrl   string       `json:"cover_photo_url"`
-	PublicationDate time.Time    `json:"publication_date,omitempty"`
+	PublicationDate time.Time    `json:"publication_date"`
+	HardCoverPrice  *float64     `json:"hardCoverPrice"`
+	DigitalPrice    *float64     `json:"digitalPrice"`
+	AudioPrice      *float64     `json:"audioPrice"`
 	Authors         []AuthorsDTO `json:"authors"`
 }
 
 func (controller *BookController) SearchBook() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		searchTerm := strings.Replace(ctx.Param("searchTerm"), "/", "", -1)
+		searchTerm := ctx.Param("searchTerm")
+		genreId := ctx.Param("genre")
+
 		fmt.Println(searchTerm)
+		fmt.Println(genreId)
 		var booksPg []BookDTO
+
+		filters := map[string]string{
+			"searchTerm":     "",
+			"genre":          `AND books.genre_id = ` + genreId,
+			"rangePrice1":    "",
+			"rangePrice2":    "",
+			"lowToHighPrice": "",
+			"rating":         "",
+			"languages":      "",
+			"authorsName":    "",
+		}
 
 		selectSentence := `
             SELECT 
@@ -195,16 +211,43 @@ func (controller *BookController) SearchBook() gin.HandlerFunc {
                 books.publication_date as publication_date,
                 ARRAY_AGG(authors.id) as author_ids,
                 ARRAY_AGG(authors.name) as author_names,
-                ARRAY_AGG(authors.lastname) as author_lastnames
+                ARRAY_AGG(authors.lastname) as author_lastnames,
+								hard_cover_formats.price as hard_cover_price,
+								audio_book_formats.price as hard_cover_price,
+								digital_formats.price as hard_cover_price
             FROM 
                 books
-            INNER JOIN 
-                author_book ON author_book.book_id = books.id
-            INNER JOIN 
-                authors ON author_book.author_id = authors.id`
-		selectSentence += ` WHERE authors.name LIKE ` + `'%` + searchTerm + `%'` + ` GROUP BY books.id`
+            LEFT JOIN 
+                author_book ON   author_book.book_id = books.id
+            LEFT JOIN 
+                genres ON   genres.id = books.genre_id
+            LEFT JOIN 
+                hard_cover_formats ON hard_cover_formats.book_id = books.id
+            LEFT JOIN 
+                audio_book_formats ON audio_book_formats.book_id = books.id
+            LEFT JOIN 
+                digital_formats ON digital_formats.book_id = books.id
+            LEFT JOIN 
+                authors ON  author_book.author_id =  authors.id`
 
-		rows, err := database.Pg.Query(context.Background(), selectSentence)
+		whereSentence := ` WHERE authors.name LIKE '%' || $1 || '%'`
+
+		if searchTerm == "undefined" {
+			searchTerm = ""
+		}
+
+		if genreId != "undefined" {
+			whereSentence += filters["genre"]
+		}
+
+		selectSentence += whereSentence + ` 
+		GROUP BY books.id, 
+		hard_cover_formats.price,
+		audio_book_formats.price,
+		digital_formats.price
+		`
+
+		rows, err := database.Pg.Query(context.Background(), selectSentence, searchTerm)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"code":   consts.ErrorCodeDatabase,
@@ -221,7 +264,19 @@ func (controller *BookController) SearchBook() gin.HandlerFunc {
 			var authorNames []string
 			var authorLastNames []string
 
-			err = rows.Scan(&book.ID, &book.Title, &book.Rating, &book.CoverPhotoUrl, &book.PublicationDate, &authorIDs, &authorNames, &authorLastNames)
+			err = rows.Scan(
+				&book.ID,
+				&book.Title,
+				&book.Rating,
+				&book.CoverPhotoUrl,
+				&book.PublicationDate,
+				&authorIDs,
+				&authorNames,
+				&authorLastNames,
+				&book.HardCoverPrice,
+				&book.AudioPrice,
+				&book.DigitalPrice,
+			)
 			if err != nil {
 				ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 					"code":   consts.ErrorCodeDatabase,
