@@ -2,11 +2,15 @@ package helpers
 
 import (
 	"os"
+	"regexp"
 	"strconv"
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
+
+
+
 
 func ParseDate(date *any) {
 }
@@ -28,4 +32,8 @@ func CheckPasswordHash(password, hash string) bool {
 
 func ParseStringToFloat64(s string) (float64, error) {
 	return strconv.ParseFloat(s, 64)
+}
+
+func IsNumberOrUndefined(num string) bool {
+	return regexp.MustCompile("[0-9]|undefined").MatchString(num)
 }

@@ -3,6 +3,7 @@ package controllers
 import (
 	"api/bookstoreApi/consts"
 	"api/bookstoreApi/database"
+	"api/bookstoreApi/helpers"
 	usermodels "api/bookstoreApi/models/userModels"
 	"context"
 	"fmt"
@@ -165,9 +166,9 @@ func (controller *BookController) GetReviews() gin.HandlerFunc {
 }
 
 type AuthorsDTO struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name" `
-	Lastname string `json:"lastname"`
+	ID       *string    `json:"id"`
+	Name     *string `json:"name" `
+	Lastname *string `json:"lastname"`
 }
 
 type BookDTO struct {
@@ -184,85 +185,120 @@ type BookDTO struct {
 
 func (controller *BookController) SearchBook() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+
 		searchTerm := ctx.Param("searchTerm")
 		genreId := ctx.Param("genre")
+		rangePrice1 := ctx.Param("rangePrice1")
+		rangePrice2 := ctx.Param("rangePrice2")
+		highToLowPrice := ctx.Param("highToLowPrice")
+		rating := ctx.Param("rating")
 
-		fmt.Println(searchTerm)
-		fmt.Println(genreId)
+
 		var booksPg []BookDTO
 
 		filters := map[string]string{
-			"searchTerm":     "",
-			"genre":          `AND books.genre_id = ` + genreId,
-			"rangePrice1":    "",
-			"rangePrice2":    "",
-			"lowToHighPrice": "",
-			"rating":         "",
-			"languages":      "",
-			"authorsName":    "",
+			"genre":          fmt.Sprintf(` AND books.genre_id = %s`, genreId) ,
+			"rangePrices":    fmt.Sprintf(` AND hard_cover_formats.price BETWEEN %s AND %s`, rangePrice1, rangePrice2),
+			"highToLowPrice": ` ORDER BY hard_cover_formats.price DESC, digital_formats.price DESC, audio_book_formats.price DESC`,
+			"rating":         fmt.Sprintf(` AND books.rating >= %s`, rating),
+			"languages":      ``,
 		}
 
-		selectSentence := `
-            SELECT 
-                books.id as id, 
-                books.title as title, 
-                books.rating as rating , 
-                books.cover_photo_url as cover_photo_url, 
-                books.publication_date as publication_date,
-                ARRAY_AGG(authors.id) as author_ids,
-                ARRAY_AGG(authors.name) as author_names,
-                ARRAY_AGG(authors.lastname) as author_lastnames,
-								hard_cover_formats.price as hard_cover_price,
-								audio_book_formats.price as hard_cover_price,
-								digital_formats.price as hard_cover_price
-            FROM 
-                books
-            LEFT JOIN 
-                author_book ON   author_book.book_id = books.id
-            LEFT JOIN 
-                genres ON   genres.id = books.genre_id
-            LEFT JOIN 
-                hard_cover_formats ON hard_cover_formats.book_id = books.id
-            LEFT JOIN 
-                audio_book_formats ON audio_book_formats.book_id = books.id
-            LEFT JOIN 
-                digital_formats ON digital_formats.book_id = books.id
-            LEFT JOIN 
-                authors ON  author_book.author_id =  authors.id`
+		if !helpers.IsNumberOrUndefined(genreId) || !helpers.IsNumberOrUndefined(rangePrice1) || !helpers.IsNumberOrUndefined(rangePrice2) || 
+		!helpers.IsNumberOrUndefined(rating) {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"code":   consts.ErrorNotNumber,
+				"error":  "",
+				"target": consts.BookModelName,
+			})
+			return
+		}
 
-		whereSentence := ` WHERE authors.name LIKE '%' || $1 || '%'`
+
+		selectSentence := `
+		SELECT 
+		books.id as id, 
+		books.title as title, 
+		books.rating as rating , 
+		books.cover_photo_url as cover_photo_url, 
+		books.publication_date as publication_date,
+		ARRAY_AGG(authors.id) as author_ids,
+		ARRAY_AGG(authors.name) as author_names,
+		ARRAY_AGG(authors.lastname) as author_lastnames,
+		hard_cover_formats.price as hard_cover_price,
+		audio_book_formats.price as audio_book_price,
+		digital_formats.price as digital_price
+		FROM 
+		books
+		LEFT JOIN 
+		author_book ON   author_book.book_id = books.id
+		LEFT JOIN 
+		genres ON   genres.id = books.genre_id
+		LEFT JOIN 
+		hard_cover_formats ON hard_cover_formats.book_id = books.id
+		LEFT JOIN 
+		audio_book_formats ON audio_book_formats.book_id = books.id
+		LEFT JOIN 
+		digital_formats ON digital_formats.book_id = books.id
+		LEFT JOIN 
+		authors ON  author_book.author_id =  authors.id  `
+
+		whereSentence := ` 
+		WHERE (authors.name LIKE '%' || $1 || '%' OR books.title LIKE '%' || $1 || '%'  )`
 
 		if searchTerm == "undefined" {
 			searchTerm = ""
+
+			fmt.Println(searchTerm)
 		}
 
 		if genreId != "undefined" {
 			whereSentence += filters["genre"]
 		}
 
+		if rangePrice1 != "undefined" && rangePrice2 != "undefined" {
+			whereSentence += filters["rangePrices"]
+		}
+
+		if rating != "undefined" {
+			whereSentence += filters["rating"]
+		}
+
+
 		selectSentence += whereSentence + ` 
+
+
 		GROUP BY books.id, 
 		hard_cover_formats.price,
 		audio_book_formats.price,
 		digital_formats.price
-		`
 
+		`
+		if highToLowPrice == "yes" {
+			selectSentence += filters["highToLowPrice"]
+		} else {
+			selectSentence += ` ORDER BY hard_cover_formats.price ASC, digital_formats.price ASC, audio_book_formats.price ASC`
+		}
+
+		fmt.Println(selectSentence)
 		rows, err := database.Pg.Query(context.Background(), selectSentence, searchTerm)
 		if err != nil {
+
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"code":   consts.ErrorCodeDatabase,
 				"error":  err.Error(),
 				"target": consts.BookModelName,
 			})
 			return
+
 		}
 		defer rows.Close()
 
 		for rows.Next() {
 			var book BookDTO
-			var authorIDs []int
-			var authorNames []string
-			var authorLastNames []string
+			var authorIDs []*string
+			var authorNames []*string
+			var authorLastNames []*string
 
 			err = rows.Scan(
 				&book.ID,
@@ -287,13 +323,16 @@ func (controller *BookController) SearchBook() gin.HandlerFunc {
 			}
 
 			for i, id := range authorIDs {
-				book.Authors = append(book.Authors, AuthorsDTO{
-					ID:       id,
-					Name:     authorNames[i],
-					Lastname: authorLastNames[i],
-				})
+				if id != nil {
+					book.Authors = append(book.Authors, AuthorsDTO{
+						ID:       id,
+						Name:     authorNames[i],
+						Lastname: authorLastNames[i],
+					})
+				} else {
+					book.Authors = []AuthorsDTO{}
+				}
 			}
-
 			booksPg = append(booksPg, book)
 		}
 

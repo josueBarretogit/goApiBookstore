@@ -38,4 +38,5 @@ func GetRootDir() (string, error) {
 const (
 	ErrorCodeBadData  = "badData"
 	ErrorCodeDatabase = "dbError"
+	ErrorNotNumber = "input was not a number"
 )
