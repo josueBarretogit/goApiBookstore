@@ -28,6 +28,7 @@ func ModelList() []ModelListFormat {
 		{ModelName: consts.PaymentModelName, Controller: controllers.NewPaymentController()},
 		{ModelName: consts.CreditCardModelName, Controller: controllers.NewCreditCardController()},
 		{ModelName: consts.BankAccountModelName, Controller: controllers.NewBankAccountControler()},
+		{ModelName: consts.LanguageModelName, Controller: controllers.NewLanguageController()},
 	}
 	return modelList
 }

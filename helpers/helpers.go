@@ -9,9 +9,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-
-
-
 func ParseDate(date *any) {
 }
 
@@ -36,4 +33,9 @@ func ParseStringToFloat64(s string) (float64, error) {
 
 func IsNumberOrUndefined(num string) bool {
 	return regexp.MustCompile("[0-9]|undefined").MatchString(num)
+}
+
+// Format expected: yyyy-mm-dd
+func IsDateOrUndefined(date string) bool {
+	return regexp.MustCompile(`^(?:\d{4}-\d{2}-\d{2}|undefined)$`).MatchString(date)
 }

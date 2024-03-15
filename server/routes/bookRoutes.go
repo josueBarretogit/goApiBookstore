@@ -23,7 +23,8 @@ func SetupRoutesBookRoutes(r *gin.Engine) {
 		bookRoutes.GET(consts.RouteBestSellers, cache.CachePage(store, time.Minute, bookController.GetBestSellers()))
 		bookRoutes.GET("/formats/:id", cache.CachePage(store, time.Minute, bookController.GetBookFormats()))
 		bookRoutes.GET("/reviews/:id", bookController.GetReviews())
-		bookRoutes.GET("/search/:searchTerm/genre/:genre/rangePrice/:rangePrice1/:rangePrice2/highToLowPrice/:highToLowPrice/rating/:rating", bookController.SearchBook())
+		bookRoutes.GET(`/search/:searchTerm/page/:page/itemsPerPage/:itemsPerPage/genre/:genre/rangePrice/:rangePrice1/:rangePrice2/highToLowPrice/:highToLowPrice/rating/:rating/fromDate/:fromDate/toDate/:toDate`, bookController.SearchBook())
 		bookRoutes.PUT("/assignAuthor/:id", bookController.AssignAuthor())
+		bookRoutes.PUT("/assignLanguage/:id", bookController.AssignLanguage())
 	}
 }
