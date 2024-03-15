@@ -124,3 +124,10 @@ func NewGenreController() *GenreController {
 		GenericController: *generiController,
 	}
 }
+
+func NewLanguageController() *LanguageController {
+	generiController := NewGenericController[usermodels.Language]("Books", consts.LanguageModelName)
+	return &LanguageController{
+		GenericController: *generiController,
+	}
+}

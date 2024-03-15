@@ -22,6 +22,7 @@ const (
 	PaymentModelName         = "payment"
 	CreditCardModelName      = "creditCard"
 	BankAccountModelName     = "bankAccount"
+	LanguageModelName        = "language"
 	RouteFindAll             = "/findall"
 	RouteFindById            = "/findby/:id"
 	RouteCreate              = "/save"
@@ -38,4 +39,6 @@ func GetRootDir() (string, error) {
 const (
 	ErrorCodeBadData  = "badData"
 	ErrorCodeDatabase = "dbError"
+	ErrorNotNumber    = "input was not a number"
+	ErrorBadDate      = "Received invalid date format"
 )

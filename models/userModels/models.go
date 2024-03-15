@@ -21,16 +21,21 @@ type Book struct {
 	Description     string                        `json:"description,omitempty"`
 	Rating          *int                          `json:"rating,omitempty"`
 	PublicationDate time.Time                     `json:"publication_date,omitempty"`
-	Language        string                        `json:"language,omitempty"`
 	ISBN            string                        `json:"isbn,omitempty"`
 	Ranking         string                        `json:"ranking,omitempty"`
-	Authors         []*Author                     `gorm:"many2many:author_book;" `
+	Authors         []*Author                     `gorm:"many2many:author_book;" json:"authors,omitempty"`
 	OrderDetails    []*paymentmodels.OrderDetails `json:"purchase_details,omitempty"`
 	GenreID         uint                          `json:"genre_id,omitempty"`
 	Genre           Genre                         `json:"genre_associated,omitempty"`
-	AudioFormat bookmodels.AudioBookFormat
-	HardCoverFormat bookmodels.HardCoverFormat
-	DigitalFormat bookmodels.DigitalFormat
+	AudioFormat     bookmodels.AudioBookFormat    `json:"audio_format,omitempty"`
+	HardCoverFormat bookmodels.HardCoverFormat    `json:"hard_cover_format,omitempty"`
+	DigitalFormat   bookmodels.DigitalFormat      `json:"digital_format,omitempty"`
+}
+
+type Language struct {
+	gorm.Model
+	Name  string  `json:"name,omitempty"`
+	Books []*Book `gorm:"many2many:language_book;" json:"books,omitempty"`
 }
 
 type Author struct {

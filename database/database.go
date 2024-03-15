@@ -1,8 +1,10 @@
 package database
 
 import (
+	"context"
 	"os"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -27,6 +29,8 @@ type Database struct {
 
 var DB *gorm.DB
 
+var Pg *pgxpool.Pool
+
 func ConnectToDB() (err error) {
 	var error error
 
@@ -34,7 +38,13 @@ func ConnectToDB() (err error) {
 	DB, error = gorm.Open(postgres.Open(dsn), &gorm.Config{
 		SkipDefaultTransaction: true,
 	})
+
 	if error != nil {
+		return error
+	}
+
+	Pg, err = pgxpool.New(context.Background(), dsn)
+	if err != nil {
 		return error
 	}
 
