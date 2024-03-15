@@ -199,6 +199,33 @@ type BookFilter struct {
 	DatesTo        string
 }
 
+func BuildSearchBookSql() string {
+	sqlBuilder := helpers.NewSQLBuilder("books")
+	sql := sqlBuilder.
+		Select(
+			`COUNT(books.id) OVER() as total`,
+			`books.id as id`,
+			`books.title as title`,
+			`books.rating as rating`,
+			`books.cover_photo_url as cover_photo_url`,
+			`books.publication_date as publication_date`,
+			`ARRAY_AGG(authors.id) as author_ids`,
+			`ARRAY_AGG(authors.name) as author_names`,
+			`ARRAY_AGG(authors.lastname) as author_lastnames`,
+			`hard_cover_formats.price as hard_cover_price`,
+			`audio_book_formats.price as audio_book_price`,
+			`digital_formats.price as digital_price`).
+		LeftJoins(`author_book ON   author_book.book_id = books.id`).
+		LeftJoins(`genres ON   genres.id = books.genre_id`).
+		LeftJoins(`hard_cover_formats ON hard_cover_formats.book_id = books.id`).
+		LeftJoins(`audio_book_formats ON audio_book_formats.book_id = books.id`).
+		LeftJoins(`digital_formats ON digital_formats.book_id = books.id`).
+		LeftJoins(`authors ON  author_book.author_id =  authors.id  `).
+		GetSQL()
+
+	return sql
+}
+
 func (controller *BookController) SearchBook() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		page := ctx.Param("page")
@@ -243,35 +270,9 @@ func (controller *BookController) SearchBook() gin.HandlerFunc {
 			})
 			return
 		}
+		selectSentence := BuildSearchBookSql()
 
-		selectSentence := `
-		SELECT 
-		COUNT(books.id) OVER() as total,
-		books.id as id, 
-		books.title as title, 
-		books.rating as rating , 
-		books.cover_photo_url as cover_photo_url, 
-		books.publication_date as publication_date,
-		ARRAY_AGG(authors.id) as author_ids,
-		ARRAY_AGG(authors.name) as author_names,
-		ARRAY_AGG(authors.lastname) as author_lastnames,
-		hard_cover_formats.price as hard_cover_price,
-		audio_book_formats.price as audio_book_price,
-		digital_formats.price as digital_price
-		FROM 
-		books
-		LEFT JOIN 
-		author_book ON   author_book.book_id = books.id
-		LEFT JOIN 
-		genres ON   genres.id = books.genre_id
-		LEFT JOIN 
-		hard_cover_formats ON hard_cover_formats.book_id = books.id
-		LEFT JOIN 
-		audio_book_formats ON audio_book_formats.book_id = books.id
-		LEFT JOIN 
-		digital_formats ON digital_formats.book_id = books.id
-		LEFT JOIN 
-		authors ON  author_book.author_id =  authors.id  `
+		fmt.Println(selectSentence)
 
 		whereSentence := ` 
 		WHERE (authors.name LIKE '%' || $1 || '%' OR books.title LIKE '%' || $1 || '%'     )`
@@ -324,6 +325,7 @@ func (controller *BookController) SearchBook() gin.HandlerFunc {
 		}
 
 		selectSentence += fmt.Sprintf(` LIMIT %s OFFSET %d`, itemsPerPage, (pageInt-1)*itemsPerPageInt)
+
 		rows, err := database.Pg.Query(context.Background(), selectSentence, searchTerm)
 		if err != nil {
 

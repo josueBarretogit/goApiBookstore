@@ -1,13 +1,51 @@
 package helpers
 
 import (
+	"fmt"
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
+
+type SQLBuilder struct {
+	selectSentence    string
+	tableName         string
+	leftJoinsSentence string
+	innerJoins        string
+	PreparedSentence  string
+}
+
+func (builder *SQLBuilder) Select(columns ...string) *SQLBuilder {
+	builder.selectSentence = `SELECT `
+	for _, column := range columns {
+		builder.selectSentence += fmt.Sprintf(`%s,`, column)
+	}
+	builder.selectSentence = strings.Trim(builder.selectSentence, ",")
+	return builder
+}
+
+func (builder *SQLBuilder) LeftJoins(join string) *SQLBuilder {
+	builder.leftJoinsSentence += fmt.Sprintf(" LEFT JOIN %s ", join)
+	return builder
+}
+
+func (builder *SQLBuilder) InnerJoins(join string) *SQLBuilder {
+	builder.innerJoins += fmt.Sprintf(" INNER JOIN %s ", join)
+	return builder
+}
+
+func (builder *SQLBuilder) GetSQL() string {
+	builder.PreparedSentence = builder.selectSentence + fmt.Sprintf("FROM %s ", builder.tableName) + builder.leftJoinsSentence
+	return builder.PreparedSentence
+}
+
+func NewSQLBuilder(tablename string) *SQLBuilder {
+	return &SQLBuilder{}
+}
 
 func ParseDate(date *any) {
 }
