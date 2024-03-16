@@ -25,11 +25,8 @@ type SQLBuilder struct {
 }
 
 func (builder *SQLBuilder) Select(columns ...string) *SQLBuilder {
-	builder.selectSentence = `SELECT `
-	for _, column := range columns {
-		builder.selectSentence += fmt.Sprintf(`%s,`, column)
-	}
-	builder.selectSentence = strings.Trim(builder.selectSentence, ",")
+	builder.selectSentence = `SELECT ` + strings.Join(columns, ",")
+
 	return builder
 }
 
@@ -38,8 +35,8 @@ func (builder *SQLBuilder) LeftJoins(tableToJoin, condition string) *SQLBuilder 
 	return builder
 }
 
-func (builder *SQLBuilder) InnerJoins(join string) *SQLBuilder {
-	builder.innerJoins += fmt.Sprintf(" INNER JOIN %s ", join)
+func (builder *SQLBuilder) InnerJoins(tableToInnerJoin string, condition string) *SQLBuilder {
+	builder.innerJoins += fmt.Sprintf(" INNER JOIN %s ON %s ", tableToInnerJoin, condition)
 	return builder
 }
 
@@ -82,6 +79,7 @@ func (builder *SQLBuilder) GetSQL() string {
 	builder.PreparedSentence = builder.selectSentence +
 		fmt.Sprintf(" FROM %s ", builder.TableName) +
 		builder.leftJoinsSentence +
+		builder.innerJoins +
 		builder.whereSentence +
 		builder.groupBy +
 		builder.orderBy +

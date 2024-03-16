@@ -68,48 +68,24 @@ type FormatDTO struct {
 	Price float64 `json:"price"`
 }
 
+type FormatsDTO struct {
+	DigitalFormat FormatDTO `gorm:"embedded"`
+	AudioFormat FormatDTO `gorm:"embedded"`
+	HardCover FormatDTO `gorm:"embedded"`
+}
+
 func (controller *BookController) GetBookFormats() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var digitalFormat FormatDTO
-		var audioFormat FormatDTO
-		var hardCover FormatDTO
+		var formats FormatsDTO
 
 		id := ctx.Params.ByName("id")
 		err := database.DB.Table("books").
-			Select("audio_book_formats.price, audio_book_formats.id").
+			Select("audio_book_formats.price, audio_book_formats.id, digital_formats.price, digital_formats.id,hard_cover_formats.price, hard_cover_formats.id").
 			Joins("LEFT JOIN audio_book_formats ON audio_book_formats.book_id = books.id").
-			Where("books.id = ?", id).
-			Scan(&audioFormat)
-
-		if err.Error != nil {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"code":   consts.ErrorCodeDatabase,
-				"error":  err.Error.Error(),
-				"target": consts.BookModelName,
-			})
-			return
-		}
-
-		err = database.DB.Table("books").
-			Select("digital_formats.price, digital_formats.id").
 			Joins("LEFT JOIN digital_formats ON digital_formats.book_id = books.id").
-			Where("books.id = ?", id).
-			Scan(&digitalFormat)
-
-		if err.Error != nil {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"code":   consts.ErrorCodeDatabase,
-				"error":  err.Error.Error(),
-				"target": consts.BookModelName,
-			})
-			return
-		}
-
-		err = database.DB.Table("books").
-			Select("hard_cover_formats.price, hard_cover_formats.id").
 			Joins("LEFT JOIN hard_cover_formats ON hard_cover_formats.book_id = books.id").
 			Where("books.id = ?", id).
-			Scan(&hardCover)
+			Scan(&formats)
 
 		if err.Error != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
@@ -120,10 +96,11 @@ func (controller *BookController) GetBookFormats() gin.HandlerFunc {
 			return
 		}
 
+
 		ctx.JSON(http.StatusOK, gin.H{
-			"digital":   digitalFormat,
-			"audio":     audioFormat,
-			"hardCover": hardCover,
+			"digital":   formats.DigitalFormat,
+			"audio":     formats.AudioFormat,
+			"hardCover": formats.HardCover,
 		})
 	}
 }
@@ -222,9 +199,9 @@ func BuildSearchBookSql(filters BookFilter) string {
 			`digital_formats.price as digital_price`).
 		LeftJoins(`author_book `, `author_book.book_id = books.id`).
 		LeftJoins(`genres`, `genres.id = books.genre_id`).
-		LeftJoins(`hard_cover_formats `, `hard_cover_formats.book_id = books.id`).
-		LeftJoins(`audio_book_formats`, `audio_book_formats.book_id = books.id`).
-		LeftJoins(`digital_formats`, `digital_formats.book_id = books.id`).
+		LeftJoins(`hard_cover_formats `, `hard_cover_formats.book_id = books.id `).
+		LeftJoins(`audio_book_formats`, `audio_book_formats.book_id = books.id `).
+		LeftJoins(`digital_formats`, `digital_formats.book_id = books.id `).
 		LeftJoins(`authors`, `author_book.author_id =  authors.id  `).
 		Where(`(authors.name LIKE '%' || $1 || '%' OR books.title LIKE '%' || $1 || '%' )`)
 
