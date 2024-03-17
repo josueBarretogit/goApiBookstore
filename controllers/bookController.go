@@ -68,48 +68,24 @@ type FormatDTO struct {
 	Price float64 `json:"price"`
 }
 
+type FormatsDTO struct {
+	DigitalFormat FormatDTO `gorm:"embedded"`
+	AudioFormat FormatDTO `gorm:"embedded"`
+	HardCover FormatDTO `gorm:"embedded"`
+}
+
 func (controller *BookController) GetBookFormats() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var digitalFormat FormatDTO
-		var audioFormat FormatDTO
-		var hardCover FormatDTO
+		var formats FormatsDTO
 
 		id := ctx.Params.ByName("id")
 		err := database.DB.Table("books").
-			Select("audio_book_formats.price, audio_book_formats.id").
+			Select("audio_book_formats.price, audio_book_formats.id, digital_formats.price, digital_formats.id,hard_cover_formats.price, hard_cover_formats.id").
 			Joins("LEFT JOIN audio_book_formats ON audio_book_formats.book_id = books.id").
-			Where("books.id = ?", id).
-			Scan(&audioFormat)
-
-		if err.Error != nil {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"code":   consts.ErrorCodeDatabase,
-				"error":  err.Error.Error(),
-				"target": consts.BookModelName,
-			})
-			return
-		}
-
-		err = database.DB.Table("books").
-			Select("digital_formats.price, digital_formats.id").
 			Joins("LEFT JOIN digital_formats ON digital_formats.book_id = books.id").
-			Where("books.id = ?", id).
-			Scan(&digitalFormat)
-
-		if err.Error != nil {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"code":   consts.ErrorCodeDatabase,
-				"error":  err.Error.Error(),
-				"target": consts.BookModelName,
-			})
-			return
-		}
-
-		err = database.DB.Table("books").
-			Select("hard_cover_formats.price, hard_cover_formats.id").
 			Joins("LEFT JOIN hard_cover_formats ON hard_cover_formats.book_id = books.id").
 			Where("books.id = ?", id).
-			Scan(&hardCover)
+			Scan(&formats)
 
 		if err.Error != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
@@ -120,10 +96,11 @@ func (controller *BookController) GetBookFormats() gin.HandlerFunc {
 			return
 		}
 
+
 		ctx.JSON(http.StatusOK, gin.H{
-			"digital":   digitalFormat,
-			"audio":     audioFormat,
-			"hardCover": hardCover,
+			"digital":   formats.DigitalFormat,
+			"audio":     formats.AudioFormat,
+			"hardCover": formats.HardCover,
 		})
 	}
 }
@@ -190,13 +167,80 @@ type BookDTO struct {
 
 type BookFilter struct {
 	Genre          string
+	SearchTerm     string
 	RangePrices    string
+	RangePrice1    string
+	RangePrice2    string
 	HighToLowPrice string
 	Rating         string
 	Languages      string
-	DatesBetween   string
 	DatesFrom      string
 	DatesTo        string
+	Page           int
+	ItemsPerPage   int
+}
+
+func BuildSearchBookSql(filters BookFilter) string {
+	sqlBuilder := helpers.NewSQLBuilder("books")
+
+	sqlBuild := sqlBuilder.
+		Select(
+			`COUNT(books.id) OVER() as total`,
+			`books.id as id`,
+			`books.title as title`,
+			`books.rating as rating`,
+			`books.cover_photo_url as cover_photo_url`,
+			`books.publication_date as publication_date`,
+			`ARRAY_AGG(authors.id) as author_ids`,
+			`ARRAY_AGG(authors.name) as author_names`,
+			`ARRAY_AGG(authors.lastname) as author_lastnames`,
+			`hard_cover_formats.price as hard_cover_price`,
+			`audio_book_formats.price as audio_book_price`,
+			`digital_formats.price as digital_price`).
+		LeftJoins(`author_book `, `author_book.book_id = books.id`).
+		LeftJoins(`genres`, `genres.id = books.genre_id`).
+		LeftJoins(`hard_cover_formats `, `hard_cover_formats.book_id = books.id `).
+		LeftJoins(`audio_book_formats`, `audio_book_formats.book_id = books.id `).
+		LeftJoins(`digital_formats`, `digital_formats.book_id = books.id `).
+		LeftJoins(`authors`, `author_book.author_id =  authors.id  `).
+		Where(`(authors.name LIKE '%' || $1 || '%' OR books.title LIKE '%' || $1 || '%' )`)
+
+	if filters.Genre != "undefined" {
+		sqlBuild.AndWhere(fmt.Sprintf(`books.genre_id = %s`, filters.Genre))
+	}
+
+	if filters.RangePrice1 != "undefined" && filters.RangePrice2 != "undefined" {
+		sqlBuild.AndWhere(fmt.Sprintf(`hard_cover_formats.price BETWEEN %s AND %s`, filters.RangePrice1, filters.RangePrice2))
+	}
+
+	if filters.Rating != "undefined" {
+		sqlBuild.AndWhere(fmt.Sprintf(`  books.rating >= %s`, filters.Rating))
+	}
+
+	if filters.DatesFrom != "undefined" && filters.DatesTo != "undefined" {
+		sqlBuild.AndWhere(fmt.Sprintf(` books.publication_date BETWEEN '%s' AND '%s'`, filters.DatesFrom, filters.DatesTo))
+	} else if filters.DatesFrom != "undefined" {
+		sqlBuild.AndWhere(fmt.Sprintf(`books.publication_date >= '%s'`, filters.DatesFrom))
+	} else if filters.DatesTo != "undefined" {
+		sqlBuild.AndWhere(fmt.Sprintf(` AND books.publication_date <= '%s'`, filters.DatesTo))
+	}
+
+	sqlBuild.Group().
+		BY("books.id, ").
+		BY("hard_cover_formats.price,").
+		BY("audio_book_formats.price,").
+		BY("digital_formats.price")
+
+	if filters.RangePrices == "yes" {
+		sqlBuild.OrderBy(` hard_cover_formats.price DESC, digital_formats.price DESC, audio_book_formats.price DESC`)
+	} else {
+		sqlBuild.OrderBy(` hard_cover_formats.price ASC, digital_formats.price ASC, audio_book_formats.price ASC`)
+	}
+
+	sqlBuild.
+		Paginate(filters.Page, filters.ItemsPerPage)
+
+	return sqlBuild.GetSQL()
 }
 
 func (controller *BookController) SearchBook() gin.HandlerFunc {
@@ -214,15 +258,13 @@ func (controller *BookController) SearchBook() gin.HandlerFunc {
 
 		var booksPg []BookDTO
 
-		filters := BookFilter{
-			Genre:          fmt.Sprintf(` AND books.genre_id = %s`, genreId),
-			RangePrices:    fmt.Sprintf(` AND hard_cover_formats.price BETWEEN %s AND %s`, rangePrice1, rangePrice2),
-			HighToLowPrice: ` ORDER BY hard_cover_formats.price DESC, digital_formats.price DESC, audio_book_formats.price DESC`,
-			Rating:         fmt.Sprintf(` AND books.rating >= %s`, rating),
-			Languages:      ``,
-			DatesBetween:   fmt.Sprintf(` AND books.publication_date BETWEEN '%s' AND '%s'`, fromDate, ToDate),
-			DatesFrom:      fmt.Sprintf(` AND books.publication_date >= '%s'`, fromDate),
-			DatesTo:        fmt.Sprintf(` AND books.publication_date <= '%s'`, ToDate),
+		pageInt, errConv := strconv.Atoi(page)
+		if errConv != nil {
+			return
+		}
+		itemsPerPageInt, errConv := strconv.Atoi(itemsPerPage)
+		if errConv != nil {
+			return
 		}
 
 		if !helpers.IsNumberOrUndefined(genreId) || !helpers.IsNumberOrUndefined(rangePrice1) || !helpers.IsNumberOrUndefined(rangePrice2) ||
@@ -244,87 +286,27 @@ func (controller *BookController) SearchBook() gin.HandlerFunc {
 			return
 		}
 
-		selectSentence := `
-		SELECT 
-		COUNT(books.id) OVER() as total,
-		books.id as id, 
-		books.title as title, 
-		books.rating as rating , 
-		books.cover_photo_url as cover_photo_url, 
-		books.publication_date as publication_date,
-		ARRAY_AGG(authors.id) as author_ids,
-		ARRAY_AGG(authors.name) as author_names,
-		ARRAY_AGG(authors.lastname) as author_lastnames,
-		hard_cover_formats.price as hard_cover_price,
-		audio_book_formats.price as audio_book_price,
-		digital_formats.price as digital_price
-		FROM 
-		books
-		LEFT JOIN 
-		author_book ON   author_book.book_id = books.id
-		LEFT JOIN 
-		genres ON   genres.id = books.genre_id
-		LEFT JOIN 
-		hard_cover_formats ON hard_cover_formats.book_id = books.id
-		LEFT JOIN 
-		audio_book_formats ON audio_book_formats.book_id = books.id
-		LEFT JOIN 
-		digital_formats ON digital_formats.book_id = books.id
-		LEFT JOIN 
-		authors ON  author_book.author_id =  authors.id  `
-
-		whereSentence := ` 
-		WHERE (authors.name LIKE '%' || $1 || '%' OR books.title LIKE '%' || $1 || '%'     )`
-
-		if searchTerm == "undefined" {
-			searchTerm = ""
+		filters := BookFilter{
+			SearchTerm:   searchTerm,
+			Genre:        genreId,
+			RangePrices:  highToLowPrice,
+			RangePrice1:  rangePrice1,
+			RangePrice2:  rangePrice2,
+			Rating:       rating,
+			Languages:    ``,
+			DatesFrom:    fromDate,
+			DatesTo:      ToDate,
+			Page:         pageInt,
+			ItemsPerPage: itemsPerPageInt,
 		}
 
-		if genreId != "undefined" {
-			whereSentence += filters.Genre
+		if filters.SearchTerm == "undefined" {
+			filters.SearchTerm = ""
 		}
 
-		if rangePrice1 != "undefined" && rangePrice2 != "undefined" {
-			whereSentence += filters.RangePrices
-		}
+		sqlSentence := BuildSearchBookSql(filters)
 
-		if rating != "undefined" {
-			whereSentence += filters.Rating
-		}
-
-		if fromDate != "undefined" && ToDate != "undefined" {
-			whereSentence += filters.DatesBetween
-		} else if fromDate != "undefined" {
-			whereSentence += filters.DatesFrom
-		} else if ToDate != "undefined" {
-			whereSentence += filters.DatesTo
-		}
-
-		selectSentence += whereSentence + ` 
-		GROUP BY books.id, 
-		hard_cover_formats.price,
-		audio_book_formats.price,
-		digital_formats.price
-
-		`
-		if highToLowPrice == "yes" {
-			selectSentence += filters.HighToLowPrice
-		} else {
-			selectSentence += ` ORDER BY hard_cover_formats.price ASC, digital_formats.price ASC, audio_book_formats.price ASC`
-		}
-
-		pageInt, errConv := strconv.Atoi(page)
-		if errConv != nil {
-			return
-		}
-		itemsPerPageInt, errConv := strconv.Atoi(itemsPerPage)
-
-		if errConv != nil {
-			return
-		}
-
-		selectSentence += fmt.Sprintf(` LIMIT %s OFFSET %d`, itemsPerPage, (pageInt-1)*itemsPerPageInt)
-		rows, err := database.Pg.Query(context.Background(), selectSentence, searchTerm)
+		rows, err := database.Pg.Query(context.Background(), sqlSentence, filters.SearchTerm)
 		if err != nil {
 
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
