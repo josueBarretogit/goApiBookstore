@@ -27,25 +27,25 @@ func (controller *BookController) AssignLanguage() gin.HandlerFunc {
 }
 
 type BestSellerBooks struct {
-	ID            uint   `json:"id"`
+	ID            uint   `json:"ID"`
 	Title         string `json:"title"`
-	CoverPhotoUrl string `json:"cover_photo_url"`
+	CoverPhotoUrl string `json:"coverPhotoUrl"`
 	Rating        *int   `json:"rating,omitempty"`
-	TotalSold     int    `json:"total_sold" gorm:"column:total_sold"`
+	TotalSold     int    `json:"totalSold" `
 }
 
 func (controller *BookController) GetBestSellers() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var mostSelledBooks []BestSellerBooks
 
-		selectFields := "books.cover_photo_url, books.id, books.title, SUM(order_details.amount) AS total_sold, order_details.amount, books.rating"
-		joinSentence := "JOIN order_details ON order_details.book_id = books.id"
+		selectFields := "books.cover_photo_url, books.id, books.title,(SELECT SUM(sold) from UNNEST(ARRAY_AGG(CAST(order_details.amount as INT))) sold) as total_sold,  books.rating"
+		joinSentence := "INNER JOIN order_details ON order_details.book_id = books.id"
 
 		err := database.DB.Table("books").
-			Joins(joinSentence).
 			Select(selectFields).
+			Joins(joinSentence).
 			Order("total_sold DESC").
-			Group("books.id, order_details.amount").
+			Group("books.id").
 			Scan(&mostSelledBooks)
 
 		if err.Error != nil {
@@ -64,7 +64,7 @@ func (controller *BookController) GetBestSellers() gin.HandlerFunc {
 }
 
 type FormatDTO struct {
-	ID    uint    `json:"id"`
+	ID    uint    `json:"ID"`
 	Price float64 `json:"price"`
 }
 
@@ -238,11 +238,15 @@ func BuildSearchBookSql(filters BookFilter) string {
 	}
 
 	sqlBuild.
-		Paginate(filters.Page, filters.ItemsPerPage)
+		Paginate(filters.Page, filters.ItemsPerPage).
+		AndWhere("books.deleted_at IS NULL")
 
 	return sqlBuild.GetSQL()
 }
 
+
+
+// Filter
 func (controller *BookController) SearchBook() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		page := ctx.Param("page")
@@ -305,6 +309,7 @@ func (controller *BookController) SearchBook() gin.HandlerFunc {
 		}
 
 		sqlSentence := BuildSearchBookSql(filters)
+
 
 		rows, err := database.Pg.Query(context.Background(), sqlSentence, filters.SearchTerm)
 		if err != nil {
@@ -369,3 +374,9 @@ func (controller *BookController) SearchBook() gin.HandlerFunc {
 		})
 	}
 }
+
+// BACKUP SENA
+
+// SELECT books.cover_photo_url, books.id, books.title,
+// (SELECT SUM(sold) from UNNEST(ARRAY_AGG(CAST(order_details.amount as int))) sold)
+// as total_sold, books.rating FROM books INNER JOIN order_details ON order_details.book_id = books.id GROUP BY books.id ORDER BY id desc

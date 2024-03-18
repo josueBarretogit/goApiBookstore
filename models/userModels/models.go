@@ -17,19 +17,19 @@ type Genre struct {
 type Book struct {
 	gorm.Model
 	Title           string                        `json:"title,omitempty"`
-	CoverPhotoUrl   string                        `json:"cover_photo_url,omitempty"`
+	CoverPhotoUrl   string                        `json:"coverPhotoUrl,omitempty"`
 	Description     string                        `json:"description,omitempty"`
 	Rating          *int                          `json:"rating,omitempty"`
-	PublicationDate time.Time                     `json:"publication_date,omitempty"`
+	PublicationDate time.Time                     `json:"publicationDate,omitempty"`
 	ISBN            string                        `json:"isbn,omitempty"`
 	Ranking         string                        `json:"ranking,omitempty"`
 	Authors         []*Author                     `gorm:"many2many:author_book;" json:"authors,omitempty"`
 	OrderDetails    []*paymentmodels.OrderDetails `json:"purchase_details,omitempty"`
-	GenreID         uint                          `json:"genre_id,omitempty"`
-	Genre           Genre                         `json:"genre_associated,omitempty"`
-	AudioFormat     bookmodels.AudioBookFormat    `json:"audio_format,omitempty"`
-	HardCoverFormat bookmodels.HardCoverFormat    `json:"hard_cover_format,omitempty"`
-	DigitalFormat   bookmodels.DigitalFormat      `json:"digital_format,omitempty"`
+	GenreID         uint                          `json:"idGenre,omitempty"`
+	Genre           Genre                         `json:"genre,omitempty"`
+	AudioFormat     bookmodels.AudioBookFormat    `json:"audioFormat,omitempty"`
+	HardCoverFormat bookmodels.HardCoverFormat    `json:"hardCover_format,omitempty"`
+	DigitalFormat   bookmodels.DigitalFormat      `json:"digitalFormat,omitempty"`
 }
 
 type Language struct {
@@ -44,7 +44,7 @@ type Author struct {
 	Lastname          string       `json:"lastname" `
 	About             *string      `json:"about" `
 	ProfilePictureUrl *string      `json:"profilePictureUrl" `
-	AccountID         uint         `json:"accountid" `
+	AccountID         uint         `json:"idAccount" `
 	Account           Account      `json:"account"`
 	Books             []*Book      `gorm:"many2many:author_book;" `
 	Publishers        []*Publisher `gorm:"many2many:author_publisher;" `
@@ -56,8 +56,8 @@ type Customer struct {
 	Lastname          string                  `json:"lastname" `
 	Document          string                  `json:"document,omitempty"`
 	PhoneNumber       string                  `json:"phone_number,omitempty"`
-	ProfilePictureUrl *string                 `json:"profile_picture_url,omitempty"`
-	AccountID         uint                    `json:"accountid" `
+	ProfilePictureUrl *string                 `json:"profilePictureUrl,omitempty"`
+	AccountID         uint                    `json:"idAccount" `
 	Account           Account                 `json:"account" `
 	Reviews           []*paymentmodels.Review `json:"reviews"`
 }
@@ -71,7 +71,7 @@ type Account struct {
 	gorm.Model
 	Username    string                       `json:"username" `
 	Password    string                       `json:"password" `
-	Roles       []*Role                      `gorm:"many2many:role_accounts;"`
+	Roles       []*Role                      `gorm:"many2many:role_accounts;" json:"roles"`
 	BankAccount []*paymentmodels.BankAccount `json:"bank_account" `
 	CreditCard  []*paymentmodels.CreditCard  `json:"credit_card" `
 }
@@ -79,11 +79,11 @@ type Account struct {
 type Publisher struct {
 	gorm.Model
 	PublisherName string    `json:"publisherName" `
-	Authors       []*Author `gorm:"many2many:author_publisher;" `
+	Authors       []*Author `gorm:"many2many:author_publisher;" json:"publishers" `
 }
 
 type CustomerAddress struct {
 	gorm.Model
 	Address    string `json:"address" `
-	CustomerID uint   `gorm:"many2many:author_publisher;" `
+	CustomerID uint   `json:"idCustomer"`
 }
