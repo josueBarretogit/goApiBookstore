@@ -39,21 +39,17 @@ func (controller *GenreController) GetGenres() gin.HandlerFunc {
 	}
 }
 
-type BookGetAllDTO struct {
-	BookId        uint    `json:"id"`
+type BookByGenreDTO struct {
+	BookId        uint    `json:"ID"`
 	Title         string  `json:"title,omitempty"`
 	CoverPhotoUrl string  `json:"cover_photo_url,omitempty"`
 	Price         float64 `json:"price"`
 }
 
-type BookByGenreDTO struct {
-	Name string `json:"name"`
-}
 
 func (controller *GenreController) GetBookByGenre() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var bookByGenre []BookGetAllDTO
-		var genre BookByGenreDTO
+		var bookByGenre []BookByGenreDTO
 
 		id := ctx.Param("id")
 
@@ -73,10 +69,6 @@ func (controller *GenreController) GetBookByGenre() gin.HandlerFunc {
 			return
 		}
 
-		err = database.DB.Model(&usermodels.Genre{}).
-			Select("name").
-			Where("genres.id = ?", id).
-			Find(&genre)
 
 		if err.Error != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
@@ -88,7 +80,6 @@ func (controller *GenreController) GetBookByGenre() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, gin.H{
-			"genre": genre,
 			"books": bookByGenre,
 		})
 	}

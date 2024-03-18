@@ -11,7 +11,7 @@ type DigitalFormat struct {
 	Price        float64 `json:"price,omitempty"`
 	ScreenReader bool    `json:"screenReader,omitempty"`
 	TextToSpeech bool    `json:"textToSpeech,omitempty"`
-	BookID       *uint   `json:"book_id,omitempty"`
+	BookID       *uint   `json:"idBook,omitempty"`
 }
 
 type HardCoverFormat struct {

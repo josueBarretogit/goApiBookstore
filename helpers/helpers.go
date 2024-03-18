@@ -120,6 +120,11 @@ func IsNumberOrUndefined(num string) bool {
 	return regexp.MustCompile("[0-9]|undefined").MatchString(num)
 }
 
+func IsNumber(num string) bool {
+	return regexp.MustCompile("[0-9]").MatchString(num)
+}
+
+
 // Format expected: yyyy-mm-dd
 func IsDateOrUndefined(date string) bool {
 	return regexp.MustCompile(`^(?:\d{4}-\d{2}-\d{2}|undefined)$`).MatchString(date)

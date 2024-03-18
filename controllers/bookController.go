@@ -37,6 +37,29 @@ type BestSellerBooks struct {
 func (controller *BookController) GetBestSellers() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var mostSelledBooks []BestSellerBooks
+		itemsPerPage := ctx.Param("itemsPerPage")
+		page := ctx.Param("page")
+
+
+		if !helpers.IsNumber(page) || !helpers.IsNumber(itemsPerPage) {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"code":   consts.ErrorNotNumber,
+				"error":  "",
+				"target": consts.BookModelName,
+			})
+			return
+		}
+
+
+		pageInt, errConv := strconv.Atoi(page)
+		if errConv != nil {
+			return
+		}
+		itemsPerPageInt, errConv := strconv.Atoi(itemsPerPage)
+		if errConv != nil {
+			return
+		}
+
 
 		selectFields := "books.cover_photo_url, books.id, books.title,(SELECT SUM(sold) from UNNEST(ARRAY_AGG(CAST(order_details.amount as INT))) sold) as total_sold,  books.rating"
 		joinSentence := "INNER JOIN order_details ON order_details.book_id = books.id"
@@ -45,6 +68,8 @@ func (controller *BookController) GetBestSellers() gin.HandlerFunc {
 			Select(selectFields).
 			Joins(joinSentence).
 			Order("total_sold DESC").
+			Offset((pageInt-1)*itemsPerPageInt).
+			Limit(itemsPerPageInt).
 			Group("books.id").
 			Scan(&mostSelledBooks)
 
@@ -55,6 +80,10 @@ func (controller *BookController) GetBestSellers() gin.HandlerFunc {
 				"target":  consts.BookModelName,
 			})
 			return
+		}
+
+		if mostSelledBooks == nil {
+			mostSelledBooks = []BestSellerBooks{}
 		}
 
 		ctx.JSON(http.StatusOK, gin.H{

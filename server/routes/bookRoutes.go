@@ -16,7 +16,7 @@ func SetupRoutesBookRoutes(r *gin.Engine) {
 
 	{
 		bookRoutes.POST(consts.RouteBookImageUpload, middleware.VerifyImages, imageController.UploadMultipleImageHandler)
-		bookRoutes.GET(consts.RouteBestSellers,  bookController.GetBestSellers())
+		bookRoutes.GET(consts.RouteBestSellers + "/page/:page/itemsPerPage/:itemsPerPage",  bookController.GetBestSellers())
 		bookRoutes.GET("/formats/:id", bookController.GetBookFormats())
 		bookRoutes.GET("/reviews/:id", bookController.GetReviews())
 		bookRoutes.GET(`/search/:searchTerm/page/:page/itemsPerPage/:itemsPerPage/genre/:genre/rangePrice/:rangePrice1/:rangePrice2/highToLowPrice/:highToLowPrice/rating/:rating/fromDate/:fromDate/toDate/:toDate`, bookController.SearchBook())
