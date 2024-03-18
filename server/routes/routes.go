@@ -15,7 +15,7 @@ func SetupRoutes(model string, controller controllers.IController, router *gin.E
 	store := persistence.NewInMemoryStore(time.Second)
 	group := router.Group(model)
 	{
-		group.GET(consts.RouteFindAll, middleware.VerifyJwt(), cache.CachePage(store, time.Minute, controller.FindAll()))
+		group.GET(consts.RouteFindAll, middleware.VerifyJwt(), controller.FindAll())
 		group.GET(consts.RouteFindById, middleware.VerifyJwt(), cache.CachePage(store, time.Minute, controller.FindOneBy()))
 		group.POST(consts.RouteCreate, controller.Create())
 		group.PUT(consts.RouteUpdate, controller.Update())

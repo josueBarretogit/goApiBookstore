@@ -24,6 +24,7 @@ type Book struct {
 	ISBN            string                        `json:"isbn,omitempty"`
 	Ranking         string                        `json:"ranking,omitempty"`
 	Authors         []*Author                     `gorm:"many2many:author_book;" json:"authors,omitempty"`
+	Languages       []*Language                   `gorm:"many2many:language_book;" json:"languages,omitempty"`
 	OrderDetails    []*paymentmodels.OrderDetails `json:"purchase_details,omitempty"`
 	GenreID         uint                          `json:"idGenre,omitempty"`
 	Genre           Genre                         `json:"genre,omitempty"`

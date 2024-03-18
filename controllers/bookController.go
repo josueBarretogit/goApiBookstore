@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-faker/faker/v4"
 )
 
 type BookController struct {
@@ -23,7 +24,40 @@ func (controller *BookController) AssignAuthor() gin.HandlerFunc {
 }
 
 func (controller *BookController) AssignLanguage() gin.HandlerFunc {
-	return AssignManyToManyRelation[usermodels.Book, usermodels.Language]("Language", consts.BookModelName)
+	return AssignManyToManyRelation[usermodels.Book, usermodels.Language]("Languages", consts.BookModelName)
+}
+
+type AuthorsDTO struct {
+	ID       *string `json:"id"`
+	Name     *string `json:"name" `
+	Lastname *string `json:"lastname"`
+}
+
+type BookDTO struct {
+	ID              int          `json:"id"`
+	Title           string       `json:"title"`
+	Rating          int          `json:"rating"`
+	CoverPhotoUrl   string       `json:"cover_photo_url"`
+	PublicationDate time.Time    `json:"publication_date"`
+	HardCoverPrice  *float64     `json:"hardCoverPrice"`
+	DigitalPrice    *float64     `json:"digitalPrice"`
+	AudioPrice      *float64     `json:"audioPrice"`
+	Authors         []AuthorsDTO `json:"authors"`
+}
+
+type BookFilter struct {
+	Genre          string
+	SearchTerm     string
+	RangePrices    string
+	RangePrice1    string
+	RangePrice2    string
+	HighToLowPrice string
+	Rating         string
+	Languages      string
+	DatesFrom      string
+	DatesTo        string
+	Page           int
+	ItemsPerPage   int
 }
 
 type BestSellerBooks struct {
@@ -31,7 +65,7 @@ type BestSellerBooks struct {
 	Title         string `json:"title"`
 	CoverPhotoUrl string `json:"coverPhotoUrl"`
 	Rating        *int   `json:"rating,omitempty"`
-	TotalSold     int    `json:"totalSold" `
+	TotalSold     int    `json:"totalSold"`
 }
 
 func (controller *BookController) GetBestSellers() gin.HandlerFunc {
@@ -39,9 +73,9 @@ func (controller *BookController) GetBestSellers() gin.HandlerFunc {
 		var mostSelledBooks []BestSellerBooks
 		itemsPerPage := ctx.Param("itemsPerPage")
 		page := ctx.Param("page")
+		idGenre := ctx.Param("idGenre")
 
-
-		if !helpers.IsNumber(page) || !helpers.IsNumber(itemsPerPage) {
+		if !helpers.IsNumber(page) || !helpers.IsNumber(itemsPerPage) || !helpers.IsNumberOrUndefined(idGenre) {
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"code":   consts.ErrorNotNumber,
 				"error":  "",
@@ -49,7 +83,6 @@ func (controller *BookController) GetBestSellers() gin.HandlerFunc {
 			})
 			return
 		}
-
 
 		pageInt, errConv := strconv.Atoi(page)
 		if errConv != nil {
@@ -60,18 +93,24 @@ func (controller *BookController) GetBestSellers() gin.HandlerFunc {
 			return
 		}
 
-
-		selectFields := "books.cover_photo_url, books.id, books.title,(SELECT SUM(sold) from UNNEST(ARRAY_AGG(CAST(order_details.amount as INT))) sold) as total_sold,  books.rating"
+		selectFields := `books.cover_photo_url, books.id, books.title,(SELECT SUM(sold) from UNNEST(ARRAY_AGG(CAST(order_details.amount as INT))) sold) as total_sold,  books.rating`
 		joinSentence := "INNER JOIN order_details ON order_details.book_id = books.id"
 
-		err := database.DB.Table("books").
+		queryBuilder := database.DB.Table("books").
 			Select(selectFields).
 			Joins(joinSentence).
+			Joins("INNER JOIN genres ON books.genre_id = genres.id").
 			Order("total_sold DESC").
-			Offset((pageInt-1)*itemsPerPageInt).
-			Limit(itemsPerPageInt).
-			Group("books.id").
-			Scan(&mostSelledBooks)
+			Offset((pageInt - 1) * itemsPerPageInt).
+			Limit(itemsPerPageInt)
+
+		if idGenre != "undefined" {
+			queryBuilder.Where("genres.id = ?", idGenre)
+		}
+
+		queryBuilder.Group("books.id, genres.id")
+
+		err := queryBuilder.Scan(&mostSelledBooks)
 
 		if err.Error != nil {
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
@@ -99,8 +138,8 @@ type FormatDTO struct {
 
 type FormatsDTO struct {
 	DigitalFormat FormatDTO `gorm:"embedded"`
-	AudioFormat FormatDTO `gorm:"embedded"`
-	HardCover FormatDTO `gorm:"embedded"`
+	AudioFormat   FormatDTO `gorm:"embedded"`
+	HardCover     FormatDTO `gorm:"embedded"`
 }
 
 func (controller *BookController) GetBookFormats() gin.HandlerFunc {
@@ -125,7 +164,6 @@ func (controller *BookController) GetBookFormats() gin.HandlerFunc {
 			return
 		}
 
-
 		ctx.JSON(http.StatusOK, gin.H{
 			"digital":   formats.DigitalFormat,
 			"audio":     formats.AudioFormat,
@@ -137,9 +175,9 @@ func (controller *BookController) GetBookFormats() gin.HandlerFunc {
 type GetReviewDto struct {
 	Rating     int    `json:"rating,omitempty"`
 	Title      string `json:"title,omitempty"`
-	BodyReview string `json:"body_review,omitempty"`
+	BodyReview string `json:"bodyReview,omitempty"`
 	Customer   struct {
-		ProfilePictureUrl string `json:"profile_picture_url"`
+		ProfilePictureUrl string `json:"profilePictureUrl"`
 		Account           struct {
 			Username string `json:"username"`
 		} `json:"account" gorm:"embedded"`
@@ -176,39 +214,6 @@ func (controller *BookController) GetReviews() gin.HandlerFunc {
 	}
 }
 
-type AuthorsDTO struct {
-	ID       *string `json:"id"`
-	Name     *string `json:"name" `
-	Lastname *string `json:"lastname"`
-}
-
-type BookDTO struct {
-	ID              int          `json:"id"`
-	Title           string       `json:"title"`
-	Rating          int          `json:"rating"`
-	CoverPhotoUrl   string       `json:"cover_photo_url"`
-	PublicationDate time.Time    `json:"publication_date"`
-	HardCoverPrice  *float64     `json:"hardCoverPrice"`
-	DigitalPrice    *float64     `json:"digitalPrice"`
-	AudioPrice      *float64     `json:"audioPrice"`
-	Authors         []AuthorsDTO `json:"authors"`
-}
-
-type BookFilter struct {
-	Genre          string
-	SearchTerm     string
-	RangePrices    string
-	RangePrice1    string
-	RangePrice2    string
-	HighToLowPrice string
-	Rating         string
-	Languages      string
-	DatesFrom      string
-	DatesTo        string
-	Page           int
-	ItemsPerPage   int
-}
-
 func BuildSearchBookSql(filters BookFilter) string {
 	sqlBuilder := helpers.NewSQLBuilder("books")
 
@@ -227,11 +232,13 @@ func BuildSearchBookSql(filters BookFilter) string {
 			`audio_book_formats.price as audio_book_price`,
 			`digital_formats.price as digital_price`).
 		LeftJoins(`author_book `, `author_book.book_id = books.id`).
+		LeftJoins(`authors`, `author_book.author_id =  authors.id  `).
 		LeftJoins(`genres`, `genres.id = books.genre_id`).
 		LeftJoins(`hard_cover_formats `, `hard_cover_formats.book_id = books.id `).
 		LeftJoins(`audio_book_formats`, `audio_book_formats.book_id = books.id `).
 		LeftJoins(`digital_formats`, `digital_formats.book_id = books.id `).
-		LeftJoins(`authors`, `author_book.author_id =  authors.id  `).
+		LeftJoins(`language_book`, `language_book.book_id =  books.id  `).
+		LeftJoins(`languages`, `language_book.language_id =  languages.id  `).
 		Where(`(authors.name LIKE '%' || $1 || '%' OR books.title LIKE '%' || $1 || '%' )`)
 
 	if filters.Genre != "undefined" {
@@ -246,6 +253,10 @@ func BuildSearchBookSql(filters BookFilter) string {
 		sqlBuild.AndWhere(fmt.Sprintf(`  books.rating >= %s`, filters.Rating))
 	}
 
+	if filters.Languages != "undefined" {
+		sqlBuild.AndWhere(fmt.Sprintf(`  languages.id IN (%s)`, filters.Languages))
+	}
+
 	if filters.DatesFrom != "undefined" && filters.DatesTo != "undefined" {
 		sqlBuild.AndWhere(fmt.Sprintf(` books.publication_date BETWEEN '%s' AND '%s'`, filters.DatesFrom, filters.DatesTo))
 	} else if filters.DatesFrom != "undefined" {
@@ -256,6 +267,7 @@ func BuildSearchBookSql(filters BookFilter) string {
 
 	sqlBuild.Group().
 		BY("books.id, ").
+		BY("languages.id, ").
 		BY("hard_cover_formats.price,").
 		BY("audio_book_formats.price,").
 		BY("digital_formats.price")
@@ -273,8 +285,6 @@ func BuildSearchBookSql(filters BookFilter) string {
 	return sqlBuild.GetSQL()
 }
 
-
-
 // Filter
 func (controller *BookController) SearchBook() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
@@ -288,6 +298,7 @@ func (controller *BookController) SearchBook() gin.HandlerFunc {
 		rating := ctx.Param("rating")
 		fromDate := ctx.Param("fromDate")
 		ToDate := ctx.Param("toDate")
+		idLanguage := ctx.Param("idLanguage")
 
 		var booksPg []BookDTO
 
@@ -301,7 +312,7 @@ func (controller *BookController) SearchBook() gin.HandlerFunc {
 		}
 
 		if !helpers.IsNumberOrUndefined(genreId) || !helpers.IsNumberOrUndefined(rangePrice1) || !helpers.IsNumberOrUndefined(rangePrice2) ||
-			!helpers.IsNumberOrUndefined(rating) || !helpers.IsNumberOrUndefined(page) || !helpers.IsNumberOrUndefined(itemsPerPage) {
+			!helpers.IsNumberOrUndefined(rating) || !helpers.IsNumberOrUndefined(page) || !helpers.IsNumberOrUndefined(itemsPerPage) || !helpers.IsNumberOrUndefined(idLanguage) {
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"code":   consts.ErrorNotNumber,
 				"error":  "",
@@ -326,7 +337,7 @@ func (controller *BookController) SearchBook() gin.HandlerFunc {
 			RangePrice1:  rangePrice1,
 			RangePrice2:  rangePrice2,
 			Rating:       rating,
-			Languages:    ``,
+			Languages:    idLanguage,
 			DatesFrom:    fromDate,
 			DatesTo:      ToDate,
 			Page:         pageInt,
@@ -339,6 +350,7 @@ func (controller *BookController) SearchBook() gin.HandlerFunc {
 
 		sqlSentence := BuildSearchBookSql(filters)
 
+		fmt.Println(sqlSentence)
 
 		rows, err := database.Pg.Query(context.Background(), sqlSentence, filters.SearchTerm)
 		if err != nil {
@@ -397,9 +409,80 @@ func (controller *BookController) SearchBook() gin.HandlerFunc {
 			booksPg = append(booksPg, book)
 		}
 
+		if booksPg == nil {
+			booksPg = []BookDTO{}
+		}
+
 		ctx.JSON(http.StatusOK, gin.H{
 			"books":      booksPg,
 			"totalBooks": total,
+		})
+	}
+}
+
+func Insert() {
+	a := 3
+
+	for i := 0; i < 2000; i++ {
+		database.DB.Model(&usermodels.Book{}).Create(&usermodels.Book{
+			Title:         faker.Name(),
+			CoverPhotoUrl: faker.URL(),
+			Description:   faker.Paragraph(),
+			Rating:        &a,
+		})
+		fmt.Printf("inserted %d", i)
+	}
+}
+
+type Test struct {
+	Id            uint   `json:"id"`
+	Title         string `json:"title"`
+	CoverPhotoUrl string `json:"cover_photo"`
+	Description   string `json:"description"`
+	Rating        uint   `json:"rating"`
+}
+
+func (controller *BookController) Test() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var test []Test
+
+		rows, err := database.Pg.Query(context.Background(), "SELECT id, title, cover_photo_url, description, rating from books where id = 1")
+		if err != nil {
+			return
+		}
+
+		defer rows.Close()
+
+		for rows.Next() {
+
+			var id uint
+			var title string
+			var CoverPhotoUrl string
+			var description string
+			var rating uint
+
+			err = rows.Scan(&id, &title, &CoverPhotoUrl, &description, &rating)
+			if err != nil {
+				ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+					"code":   consts.ErrorCodeDatabase,
+					"error":  err.Error(),
+					"target": consts.BookModelName,
+				})
+				return
+			}
+
+			test = append(test, Test{
+				Id:            id,
+				Title:         title,
+				CoverPhotoUrl: CoverPhotoUrl,
+				Description:   description,
+				Rating:        rating,
+			})
+
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{
+			"books": test,
 		})
 	}
 }

@@ -14,7 +14,7 @@ type GenreController struct {
 }
 
 type GetGenresListDTO struct {
-	ID   uint   `json:"id"`
+	ID   uint   `json:"ID"`
 	Name string `json:"name"`
 }
 
@@ -40,12 +40,13 @@ func (controller *GenreController) GetGenres() gin.HandlerFunc {
 }
 
 type BookByGenreDTO struct {
-	BookId        uint    `json:"ID"`
-	Title         string  `json:"title,omitempty"`
-	CoverPhotoUrl string  `json:"cover_photo_url,omitempty"`
-	Price         float64 `json:"price"`
+	BookId         uint    `json:"ID"`
+	Title          string  `json:"title,omitempty"`
+	CoverPhotoUrl  string  `json:"coverPhotoUrl,omitempty"`
+	HardCoverPrice float64 `json:"hardCoverPrice"`
+	DigitalPrice   float64 `json:"digitalPrice"`
+	AudioPrice     float64 `json:"audioPrice"`
 }
-
 
 func (controller *GenreController) GetBookByGenre() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
@@ -54,8 +55,11 @@ func (controller *GenreController) GetBookByGenre() gin.HandlerFunc {
 		id := ctx.Param("id")
 
 		err := database.DB.Table("books").
-			Select("books.id as book_id, books.title as book_title, books.title as title, books.cover_photo_url as cover_photo_url, hard_cover_formats.price as price ").
+			Select(`books.id as book_id, books.title as book_title, books.title as title, books.cover_photo_url as cover_photo_url, 
+			hard_cover_formats.price as hard_cover_price , digital_formats.price as digital_price, audio_book_formats.price as audio_price`).
 			Joins("INNER JOIN hard_cover_formats ON hard_cover_formats.book_id = books.id").
+			Joins("INNER JOIN digital_formats ON digital_formats.book_id = books.id").
+			Joins("INNER JOIN audio_book_formats ON audio_book_formats.book_id = books.id").
 			Joins("INNER JOIN genres ON genres.id = books.genre_id").
 			Where("genres.id = ?", id).
 			Scan(&bookByGenre)
@@ -68,7 +72,6 @@ func (controller *GenreController) GetBookByGenre() gin.HandlerFunc {
 			})
 			return
 		}
-
 
 		if err.Error != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{

@@ -37,6 +37,7 @@ func ConnectToDB() (err error) {
 	dsn := os.Getenv("DB_URI")
 	DB, error = gorm.Open(postgres.Open(dsn), &gorm.Config{
 		SkipDefaultTransaction: true,
+		PrepareStmt:            true,
 	})
 
 	if error != nil {
@@ -45,7 +46,7 @@ func ConnectToDB() (err error) {
 
 	Pg, err = pgxpool.New(context.Background(), dsn)
 	if err != nil {
-		return error
+		return err
 	}
 
 	return nil
