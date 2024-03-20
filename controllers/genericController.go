@@ -46,7 +46,7 @@ func (controller *GenericController[T]) Create() gin.HandlerFunc {
 
 		err := database.DB.Create(&model)
 		if err.Error != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"code":    consts.ErrorCodeDatabase,
 				"target":  controller.ModelName,
 				"details": err.Error.Error(),
@@ -54,7 +54,7 @@ func (controller *GenericController[T]) Create() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusCreated, gin.H{
 			"created": model,
 		})
 	}
@@ -65,7 +65,7 @@ func (controller *GenericController[T]) FindAll() gin.HandlerFunc {
 		var models []T
 		err := database.DB.Preload(clause.Associations).Order("ID desc").Find(&models)
 		if err.Error != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"code":    consts.ErrorCodeDatabase,
 				"target":  controller.ModelName,
 				"details": err.Error.Error(),
@@ -86,7 +86,7 @@ func (controller *GenericController[T]) FindOneBy() gin.HandlerFunc {
 
 		err := database.DB.Limit(1).Preload(clause.Associations).Find(&model, id)
 		if err.Error != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"code":    consts.ErrorCodeDatabase,
 				"target":  controller.ModelName,
 				"details": err.Error.Error(),
@@ -108,7 +108,7 @@ func (controller *GenericController[T]) Update() gin.HandlerFunc {
 		id := c.Params.ByName("id")
 		err := database.DB.First(&modelToUpdate, id)
 		if err.Error != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"code":    consts.ErrorCodeDatabase,
 				"target":  controller.ModelName,
 				"details": err.Error.Error(),
@@ -127,7 +127,7 @@ func (controller *GenericController[T]) Update() gin.HandlerFunc {
 
 		errDatabase := database.DB.Model(&modelToUpdate).Updates(&modelData)
 		if err.Error != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"code":    consts.ErrorCodeDatabase,
 				"target":  controller.ModelName,
 				"details": errDatabase.Error.Error(),

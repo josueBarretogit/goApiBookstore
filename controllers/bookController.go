@@ -239,7 +239,7 @@ func BuildSearchBookSql(filters BookFilter) string {
 		LeftJoins(`digital_formats`, `digital_formats.book_id = books.id `).
 		LeftJoins(`language_book`, `language_book.book_id =  books.id  `).
 		LeftJoins(`languages`, `language_book.language_id =  languages.id  `).
-		Where(`(authors.name LIKE '%' || $1 || '%' OR books.title LIKE '%' || $1 || '%' )`)
+		Where(`(authors.name ILIKE '%' || $1 || '%' OR books.title ILIKE '%' || $1 || '%' )`)
 
 	if filters.Genre != "undefined" {
 		sqlBuild.AndWhere(fmt.Sprintf(`books.genre_id = %s`, filters.Genre))
@@ -350,8 +350,6 @@ func (controller *BookController) SearchBook() gin.HandlerFunc {
 
 		sqlSentence := BuildSearchBookSql(filters)
 
-		fmt.Println(sqlSentence)
-
 		rows, err := database.Pg.Query(context.Background(), sqlSentence, filters.SearchTerm)
 		if err != nil {
 
@@ -416,6 +414,120 @@ func (controller *BookController) SearchBook() gin.HandlerFunc {
 		ctx.JSON(http.StatusOK, gin.H{
 			"books":      booksPg,
 			"totalBooks": total,
+		})
+	}
+}
+
+type LanguageDto struct {
+	ID   *string `json:"ID"`
+	Name *string `json:"name"`
+}
+
+type OneBookDTO struct {
+	ID              uint          `json:"ID"`
+	Title           string        `json:"title"`
+	PublicationDate time.Time     `json:"publicationDate"`
+	CoverPhotoUrl   string        `json:"coverPhotoUrl"`
+	Rating          int           `json:"rating"`
+	Description     string        `json:"description"`
+	Isbn            string        `json:"isbn"`
+	Authors         []AuthorsDTO  `json:"authors" `
+	Languages       []LanguageDto `json:"languages" `
+	Genre           struct {
+		Name string `json:"name"`
+	} `json:"genre"`
+}
+
+func buildGetOneBookSql() string {
+	sqlBuilder := helpers.NewSQLBuilder("books")
+
+	sqlSentence := sqlBuilder.Select(
+		"books.id as id",
+		"books.title as title",
+		"books.publication_date as publication_date",
+		"books.cover_photo_url as cover_photo_url",
+		`ARRAY_AGG(DISTINCT ( authors.id )) as author_ids`,
+		`ARRAY_AGG(DISTINCT ( authors.name )) as author_names`,
+		`ARRAY_AGG(DISTINCT ( authors.lastname )) as author_lastnames`,
+		`ARRAY_AGG(DISTINCT ( languages.id )) as languages_id`,
+		`ARRAY_AGG(DISTINCT ( languages.name )) as languages_name`,
+		`genres.name as genre_name`,
+	).
+		InnerJoins("author_book", "author_book.book_id = books.id").
+		InnerJoins("authors", "authors.id = author_book.author_id").
+		InnerJoins("language_book", "language_book.book_id = books.id").
+		InnerJoins("languages", "languages.id = language_book.language_id").
+		InnerJoins("genres", "genres.id = books.genre_id").
+		Where("books.id = $1").
+		AndWhere("books.deleted_at IS NULL").
+		Group().BY("books.id,").BY("genres.id").
+		GetSQL()
+
+	return sqlSentence
+}
+
+func (controller *BookController) GetOneBook() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var book OneBookDTO
+		var authorsId []*string
+		var authorsName []*string
+		var authorsLastName []*string
+		var languagesId []*string
+		var languagesNames []*string
+
+		idBook := ctx.Param("idBook")
+
+		if !helpers.IsNumber(idBook) {
+
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"code":   consts.ErrorNotNumber,
+				"error":  "",
+				"target": consts.BookModelName,
+			})
+			return
+
+		}
+
+		sqlSentence := buildGetOneBookSql()
+
+		err := database.Pg.QueryRow(context.Background(), sqlSentence, idBook).Scan(
+			&book.ID,
+			&book.Title,
+			&book.PublicationDate,
+			&book.CoverPhotoUrl,
+			&authorsId,
+			&authorsName,
+			&authorsLastName,
+			&languagesId,
+			&languagesNames,
+			&book.Genre.Name,
+		)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"code":   consts.ErrorCodeDatabase,
+				"error":  err.Error(),
+				"target": consts.BookModelName,
+			})
+			return
+		}
+
+		for index, id := range authorsId {
+			book.Authors = append(book.Authors, AuthorsDTO{
+				ID:       id,
+				Name:     authorsLastName[index],
+				Lastname: authorsLastName[index],
+			})
+		}
+
+		for index, id := range languagesId {
+			book.Languages = append(book.Languages, LanguageDto{
+				ID:   id,
+				Name: languagesNames[index],
+			})
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{
+			"book": book,
 		})
 	}
 }

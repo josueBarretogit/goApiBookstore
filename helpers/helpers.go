@@ -61,7 +61,7 @@ func (builder *SQLBuilder) Group() *SQLBuilder {
 }
 
 func (builder *SQLBuilder) BY(groupBy string) *SQLBuilder {
-	builder.groupBy += groupBy
+	builder.groupBy += ` ` + groupBy
 	return builder
 }
 
@@ -123,7 +123,6 @@ func IsNumberOrUndefined(num string) bool {
 func IsNumber(num string) bool {
 	return regexp.MustCompile("[0-9]").MatchString(num)
 }
-
 
 // Format expected: yyyy-mm-dd
 func IsDateOrUndefined(date string) bool {
