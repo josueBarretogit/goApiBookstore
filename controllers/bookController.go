@@ -478,14 +478,12 @@ func (controller *BookController) GetOneBook() gin.HandlerFunc {
 		idBook := ctx.Param("idBook")
 
 		if !helpers.IsNumber(idBook) {
-
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"code":   consts.ErrorNotNumber,
 				"error":  "",
 				"target": consts.BookModelName,
 			})
 			return
-
 		}
 
 		sqlSentence := buildGetOneBookSql()

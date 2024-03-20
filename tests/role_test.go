@@ -47,7 +47,7 @@ func TestFindAllRouteRole(t *testing.T) {
 
 	assert.NoError(errBody, "should unmarshal response body")
 
-	assert.Equal(http.StatusOK, response.StatusCode, "status code should be 200")
+	assert.Equal(http.StatusCreated, response.StatusCode, "status code should be 201")
 	assert.Containsf(w.Body.String(), "models", "response should contain at least models")
 	assert.True(reflect.TypeOf(body.Models).Kind() == reflect.Slice, "response models should be slice")
 }
@@ -80,7 +80,7 @@ func TestCreateRole(t *testing.T) {
 
 	assert.NoError(errBody, "should unmarshal response body")
 
-	assert.Equal(http.StatusOK, response.StatusCode, "status code should be 200")
+	assert.Equal(http.StatusCreated, response.StatusCode, "status code should be 201")
 	assert.Containsf(w.Body.String(), "created", "response should contain created role")
 }
 
@@ -96,7 +96,7 @@ func TestUpdateRole(t *testing.T) {
 
 	assert.NoError(errMarshal)
 
-	req, errRequest := http.NewRequest(http.MethodPut, os.Getenv("ROOT_API")+consts.RoleModelName+"/update/3", bytes.NewReader(roleMockJson))
+	req, errRequest := http.NewRequest(http.MethodPut, os.Getenv("ROOT_API")+consts.RoleModelName+"/3", bytes.NewReader(roleMockJson))
 
 	req.Header.Add("authorization", os.Getenv("JWT_KEY_TESTS"))
 	req.Header.Set("Content-Type", "application/json")

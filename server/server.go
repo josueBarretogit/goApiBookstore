@@ -6,8 +6,9 @@ import (
 	"api/bookstoreApi/server/routes"
 	"flag"
 	"time"
- "github.com/gin-contrib/gzip"
+
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 )
 
@@ -33,16 +34,16 @@ func SetupServer() *gin.Engine {
 
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:4000", "http://localhost:3000"},
-		AllowMethods:     []string{"PUT", "PATCH", "POST", "GET" , "DELETE"},
+		AllowMethods:     []string{"PUT", "PATCH", "POST", "GET", "DELETE"},
 		AllowHeaders:     []string{"Origin", "authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
-		
-		MaxAge: 12 * time.Hour,
-		}))
 
-  r.Use(gzip.Gzip(gzip.DefaultCompression))
-	r.StaticFS("/assets" , gin.Dir("public", false))
+		MaxAge: 12 * time.Hour,
+	}))
+
+	r.Use(gzip.Gzip(gzip.DefaultCompression))
+	r.StaticFS("/assets", gin.Dir("public", false))
 
 	for _, modelFormat := range routes.ModelList() {
 		routes.SetupRoutes(modelFormat.ModelName, modelFormat.Controller, r)
@@ -54,5 +55,8 @@ func SetupServer() *gin.Engine {
 	routes.SetupRoutesBookRoutes(r)
 	routes.SetupRoutesCustomer(r)
 	routes.SetupRoutesGenre(r)
+	routes.SetupRoutesAudioBookFormat(r)
+	routes.SetupRoutesDigitlBookFormat(r)
+	routes.SetupRoutesHardCoverBookFormat(r)
 	return r
 }

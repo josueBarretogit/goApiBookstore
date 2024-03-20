@@ -63,9 +63,9 @@ func NewDigitalFormatController() *DigitalFormatController {
 	}
 }
 
-func NewAudioBookFormatController() *AudioBookFormatController {
+func NewAudioBookFormatController() *AudioFormatController {
 	generiController := NewGenericController[bookmodels.AudioBookFormat]("", consts.AudioBookFormatModelName)
-	return &AudioBookFormatController{
+	return &AudioFormatController{
 		GenericController: *generiController,
 	}
 }
