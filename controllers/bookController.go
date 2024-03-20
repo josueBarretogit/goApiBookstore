@@ -13,6 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-faker/faker/v4"
+	"github.com/jackc/pgx/v5"
 )
 
 type BookController struct {
@@ -191,13 +192,44 @@ func (controller *BookController) GetReviews() gin.HandlerFunc {
 		sl := "reviews.rating as rating, reviews.title as title, reviews.body_review as body_review, accounts.username as username, customers.profile_picture_url as profile_picture_url"
 
 		id := ctx.Params.ByName("id")
-		err := database.DB.Table("books").
+		page := ctx.Params.ByName("page")
+		itemsPerPages := ctx.Params.ByName("itemsPerPages")
+		rating := ctx.Params.ByName("rating")
+
+		if !helpers.IsNumber(id) || !helpers.IsNumber(page) || !helpers.IsNumber(itemsPerPages) || !helpers.IsNumberOrUndefined(rating) {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"code":   consts.ErrorNotNumber,
+				"error":  "",
+				"target": consts.HardcoverFormatModelName,
+			})
+			return
+		}
+
+		pageInt, errConv := strconv.Atoi(page)
+		if errConv != nil {
+			return
+		}
+		itemsPerPageInt, errConv := strconv.Atoi(itemsPerPages)
+		if errConv != nil {
+			return
+		}
+
+		sqlBuilder := database.DB.Table("books").
 			Select(sl).
 			Joins("INNER JOIN reviews on reviews.book_id = books.id").
 			Joins("INNER JOIN customers on reviews.customer_id = customers.id").
 			Joins("INNER JOIN accounts on accounts.id = customers.account_id").
-			Where("books.id = ?", id).
-			Scan(&reviews)
+			Offset((pageInt-1)*itemsPerPageInt).
+			Limit(itemsPerPageInt).
+			Where("books.id = ? ", id)
+
+		if rating != "undefined" {
+			sqlBuilder.
+				Where("reviews.rating = ?", rating)
+		}
+		sqlBuilder.Where("books.deleted_at IS NULL")
+
+		err := sqlBuilder.Scan(&reviews)
 
 		if err.Error != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
@@ -206,6 +238,10 @@ func (controller *BookController) GetReviews() gin.HandlerFunc {
 				"target": consts.BookModelName,
 			})
 			return
+		}
+
+		if reviews == nil {
+			reviews = []GetReviewDto{}
 		}
 
 		ctx.JSON(http.StatusOK, gin.H{
@@ -500,6 +536,16 @@ func (controller *BookController) GetOneBook() gin.HandlerFunc {
 			&languagesNames,
 			&book.Genre.Name,
 		)
+
+		if err != nil && err.Error() == pgx.ErrNoRows.Error() {
+			ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+				"code":   pgx.ErrNoRows,
+				"error":  err.Error(),
+				"target": consts.BookModelName,
+			})
+			return
+		}
+
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"code":   consts.ErrorCodeDatabase,
