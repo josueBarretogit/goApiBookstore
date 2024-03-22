@@ -42,3 +42,5 @@ const (
 	ErrorNotNumber    = "input was not a number"
 	ErrorBadDate      = "Received invalid date format"
 )
+
+const AVGrating = `(SELECT AVG(ratings) FROM UNNEST(books.rating) ratings) as rating`

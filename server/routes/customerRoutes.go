@@ -11,8 +11,10 @@ import (
 func SetupRoutesCustomer(r *gin.Engine) {
 	customerRoutes := r.Group(consts.CustomerModelName)
 
-	imageController := controllers.NewImageController("customer") 
+	customerController := controllers.NewCustomerController()
+	imageController := controllers.NewImageController("customer")
 	{
+		customerRoutes.GET("/:id/reviews", customerController.GetCustomerReviews())
 		customerRoutes.POST("/uploadCustomerProfilePicture/:id", middleware.VerifyImages, imageController.UploadMultipleImageHandler)
 	}
 }

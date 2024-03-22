@@ -11,6 +11,7 @@ func SetupRoutesAuthor(r *gin.Engine) {
 	authorRoutes := r.Group(consts.AuthorModelName)
 	authorController := controllers.NewAuthorController()
 	{
+		authorRoutes.GET("/:id/books", authorController.GetAuthorBooks())
 		authorRoutes.PUT("/assignPublisher/:id", authorController.AssignPublisher())
 		authorRoutes.PUT("/assignBook/:id", authorController.AssignBook())
 	}

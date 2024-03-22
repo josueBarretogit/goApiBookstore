@@ -120,7 +120,8 @@ func IsNumberOrUndefined(num string) bool {
 }
 
 func IsNumber(num string) bool {
-	return regexp.MustCompile("[0-9]").MatchString(num)
+	pattern := `^-?\d+$`
+	return regexp.MustCompile(pattern).MatchString(num)
 }
 
 // Format expected: yyyy-mm-dd
