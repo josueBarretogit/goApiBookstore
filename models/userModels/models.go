@@ -19,7 +19,7 @@ type Book struct {
 	Title           string                        `json:"title,omitempty"`
 	CoverPhotoUrl   string                        `json:"coverPhotoUrl,omitempty"`
 	Description     string                        `json:"description,omitempty"`
-	Rating          *int                          `json:"rating,omitempty"`
+	Rating          any                          `json:"rating,omitempty" gorm:"type:int8[]"`
 	PublicationDate time.Time                     `json:"publicationDate,omitempty"`
 	ISBN            string                        `json:"isbn,omitempty"`
 	Ranking         string                        `json:"ranking,omitempty"`

@@ -37,7 +37,7 @@ type AuthorsDTO struct {
 type BookDTO struct {
 	ID              int          `json:"id"`
 	Title           string       `json:"title"`
-	Rating          int          `json:"rating"`
+	Rating          *string      `json:"rating"`
 	CoverPhotoUrl   string       `json:"cover_photo_url"`
 	PublicationDate time.Time    `json:"publication_date"`
 	HardCoverPrice  *float64     `json:"hardCoverPrice"`
@@ -62,11 +62,11 @@ type BookFilter struct {
 }
 
 type BestSellerBooks struct {
-	ID            uint   `json:"ID"`
-	Title         string `json:"title"`
-	CoverPhotoUrl string `json:"coverPhotoUrl"`
-	Rating        *int   `json:"rating,omitempty"`
-	TotalSold     int    `json:"totalSold"`
+	ID            uint    `json:"ID"`
+	Title         string  `json:"title"`
+	CoverPhotoUrl string  `json:"coverPhotoUrl"`
+	Rating        *string `json:"rating,omitempty"`
+	TotalSold     int     `json:"totalSold"`
 }
 
 func (controller *BookController) GetBestSellers() gin.HandlerFunc {
@@ -94,7 +94,11 @@ func (controller *BookController) GetBestSellers() gin.HandlerFunc {
 			return
 		}
 
-		selectFields := `books.cover_photo_url, books.id, books.title,(SELECT SUM(sold) from UNNEST(ARRAY_AGG(CAST(order_details.amount as INT))) sold) as total_sold,  books.rating`
+		selectFields := `
+		books.cover_photo_url,
+		books.id, books.title,
+		(SELECT SUM(sold) from UNNEST(ARRAY_AGG(CAST(order_details.amount as INT))) sold) as total_sold,
+		(SELECT AVG(avg) from UNNEST(books.rating) avg) as rating`
 		joinSentence := "INNER JOIN order_details ON order_details.book_id = books.id"
 
 		queryBuilder := database.DB.Table("books").
@@ -250,6 +254,138 @@ func (controller *BookController) GetReviews() gin.HandlerFunc {
 	}
 }
 
+type BookReviewDTO struct {
+	ID      uint         `json:"ID"`
+	Title   string       `json:"title"`
+	Authors []AuthorsDTO `json:"authors"`
+}
+
+type RatingsStatisticsDTO struct {
+	FiveStar struct {
+		Percentage *float64 `json:"percentage"`
+	} `json:"fiveStar"`
+	FourStar struct {
+		Percentage *float64 `json:"percentage"`
+	} `json:"fourStar"`
+	ThreeStar struct {
+		Percentage *float64 `json:"percentage"`
+	} `json:"threeStar"`
+	TwoStart struct {
+		Percentage *float64 `json:"percentage"`
+	} `json:"twoStar"`
+	OneStar struct {
+		Percentage *float64 `json:"percentage"`
+	} `json:"oneStar"`
+}
+
+type ReviewStatisticsDTO struct {
+	Book         BookReviewDTO        `json:"book"`
+	Ratings      RatingsStatisticsDTO `json:"ratings"`
+	TotalReviews *float64             `json:"totalReviews"`
+}
+
+func (controller *BookController) GetReviewStatistics() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		idBook := ctx.Param("idBook")
+
+		if !helpers.IsNumber(idBook) {
+
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"code":   consts.ErrorNotNumber,
+				"error":  "",
+				"target": consts.HardcoverFormatModelName,
+			})
+			return
+		}
+
+		var ReviewStatistics ReviewStatisticsDTO
+		var authorIDs []*string
+		var authorsName []*string
+		var authorsLastName []*string
+
+		sqlSentence := helpers.NewSQLBuilder("books").
+			Select(
+				"books.id as id",
+				"books.title as title",
+				"ARRAY_AGG(DISTINCT authors.id) as author_id",
+				"ARRAY_AGG(DISTINCT authors.name) as name",
+				"ARRAY_AGG(DISTINCT authors.lastname) as lastname",
+				"COUNT(DISTINCT reviews.id) as total_rating",
+				`(Select COUNT(reviews.rating) FROM reviews INNER JOIN books ON reviews.book_id = books.id WHERE books.id = $1 AND reviews.rating = 5 AND books.deleted_at IS NULL) as total_five_rating`,
+				"(Select COUNT(reviews.rating) FROM reviews INNER JOIN books ON reviews.book_id = books.id WHERE books.id = $1 AND reviews.rating = 4 AND books.deleted_at IS NULL) as total_four_rating",
+				"(Select COUNT(reviews.rating) FROM reviews INNER JOIN books ON reviews.book_id = books.id WHERE books.id = $1 AND reviews.rating = 3 AND books.deleted_at IS NULL) as total_three_rating",
+				"(Select COUNT(reviews.rating) FROM reviews INNER JOIN books ON reviews.book_id = books.id WHERE books.id = $1 AND reviews.rating = 2 AND books.deleted_at IS NULL) as total_two_rating",
+				"(Select COUNT(reviews.rating) FROM reviews INNER JOIN books ON reviews.book_id = books.id WHERE books.id = $1 AND reviews.rating = 1 AND books.deleted_at IS NULL)  as total_one_rating",
+			).
+			InnerJoins("reviews", "reviews.book_id = books.id").
+			InnerJoins("author_book", "author_book.book_id = books.id").
+			InnerJoins("authors", "authors.id = author_book.author_id").
+			Where("books.id = $1").
+			AndWhere("books.deleted_at IS NULL").
+			Group().BY("books.id").
+			GetSQL()
+
+		err := database.Pg.QueryRow(context.Background(), sqlSentence, idBook).Scan(
+			&ReviewStatistics.Book.ID,
+			&ReviewStatistics.Book.Title,
+			&authorIDs,
+			&authorsName,
+			&authorsLastName,
+			&ReviewStatistics.TotalReviews,
+			&ReviewStatistics.Ratings.FiveStar.Percentage,
+			&ReviewStatistics.Ratings.FourStar.Percentage,
+			&ReviewStatistics.Ratings.ThreeStar.Percentage,
+			&ReviewStatistics.Ratings.TwoStart.Percentage,
+			&ReviewStatistics.Ratings.OneStar.Percentage,
+		)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"code":   consts.ErrorCodeDatabase,
+				"error":  err.Error(),
+				"target": consts.BookModelName,
+			})
+			return
+		}
+
+		for index, id := range authorIDs {
+			ReviewStatistics.Book.Authors = append(ReviewStatistics.Book.Authors, AuthorsDTO{
+				ID:       id,
+				Name:     authorsName[index],
+				Lastname: authorsLastName[index],
+			})
+		}
+
+		if ReviewStatistics.Ratings.OneStar.Percentage != nil {
+			result1 := (*ReviewStatistics.Ratings.OneStar.Percentage / *ReviewStatistics.TotalReviews) * 100
+			ReviewStatistics.Ratings.OneStar.Percentage = &result1
+		}
+
+		if ReviewStatistics.Ratings.TwoStart.Percentage != nil {
+			result1 := (*ReviewStatistics.Ratings.TwoStart.Percentage / *ReviewStatistics.TotalReviews) * 100
+			ReviewStatistics.Ratings.TwoStart.Percentage = &result1
+		}
+
+		if ReviewStatistics.Ratings.ThreeStar.Percentage != nil {
+			result1 := (*ReviewStatistics.Ratings.ThreeStar.Percentage / *ReviewStatistics.TotalReviews) * 100
+			ReviewStatistics.Ratings.ThreeStar.Percentage = &result1
+		}
+
+		if ReviewStatistics.Ratings.FourStar.Percentage != nil {
+			result1 := (*ReviewStatistics.Ratings.FourStar.Percentage / *ReviewStatistics.TotalReviews) * 100
+			ReviewStatistics.Ratings.FourStar.Percentage = &result1
+		}
+
+		if ReviewStatistics.Ratings.FiveStar.Percentage != nil {
+			result1 := (*ReviewStatistics.Ratings.FiveStar.Percentage / *ReviewStatistics.TotalReviews) * 100
+			ReviewStatistics.Ratings.FiveStar.Percentage = &result1
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{
+			"reviewStatistics": ReviewStatistics,
+		})
+	}
+}
+
 func BuildSearchBookSql(filters BookFilter) string {
 	sqlBuilder := helpers.NewSQLBuilder("books")
 
@@ -258,7 +394,7 @@ func BuildSearchBookSql(filters BookFilter) string {
 			`COUNT(books.id) OVER() as total`,
 			`books.id as id`,
 			`books.title as title`,
-			`books.rating as rating`,
+			`(SELECT AVG(ratings) FROM UNNEST(books.rating) ratings) as rating`,
 			`books.cover_photo_url as cover_photo_url`,
 			`books.publication_date as publication_date`,
 			`ARRAY_AGG(authors.id) as author_ids`,
@@ -273,8 +409,6 @@ func BuildSearchBookSql(filters BookFilter) string {
 		LeftJoins(`hard_cover_formats `, `hard_cover_formats.book_id = books.id `).
 		LeftJoins(`audio_book_formats`, `audio_book_formats.book_id = books.id `).
 		LeftJoins(`digital_formats`, `digital_formats.book_id = books.id `).
-		LeftJoins(`language_book`, `language_book.book_id =  books.id  `).
-		LeftJoins(`languages`, `language_book.language_id =  languages.id  `).
 		Where(`(authors.name ILIKE '%' || $1 || '%' OR books.title ILIKE '%' || $1 || '%' )`)
 
 	if filters.Genre != "undefined" {
@@ -290,7 +424,10 @@ func BuildSearchBookSql(filters BookFilter) string {
 	}
 
 	if filters.Languages != "undefined" {
-		sqlBuild.AndWhere(fmt.Sprintf(`  languages.id IN (%s)`, filters.Languages))
+		sqlBuild.
+		LeftJoins(`language_book`, `language_book.book_id =  books.id  `).
+		LeftJoins(`languages`, `language_book.language_id =  languages.id  `).
+			AndWhere(fmt.Sprintf(`  languages.id IN (%s)`, filters.Languages))
 	}
 
 	if filters.DatesFrom != "undefined" && filters.DatesTo != "undefined" {
@@ -303,7 +440,6 @@ func BuildSearchBookSql(filters BookFilter) string {
 
 	sqlBuild.Group().
 		BY("books.id, ").
-		BY("languages.id, ").
 		BY("hard_cover_formats.price,").
 		BY("audio_book_formats.price,").
 		BY("digital_formats.price")
@@ -388,15 +524,14 @@ func (controller *BookController) SearchBook() gin.HandlerFunc {
 
 		rows, err := database.Pg.Query(context.Background(), sqlSentence, filters.SearchTerm)
 		if err != nil {
-
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"code":   consts.ErrorCodeDatabase,
 				"error":  err.Error(),
 				"target": consts.BookModelName,
 			})
 			return
-
 		}
+
 		defer rows.Close()
 
 		var total int
@@ -464,7 +599,7 @@ type OneBookDTO struct {
 	Title           string        `json:"title"`
 	PublicationDate time.Time     `json:"publicationDate"`
 	CoverPhotoUrl   string        `json:"coverPhotoUrl"`
-	Rating          int           `json:"rating"`
+	Rating          *string       `json:"rating"`
 	Description     string        `json:"description"`
 	Isbn            string        `json:"isbn"`
 	Authors         []AuthorsDTO  `json:"authors" `
@@ -488,6 +623,7 @@ func buildGetOneBookSql() string {
 		`ARRAY_AGG(DISTINCT ( languages.id )) as languages_id`,
 		`ARRAY_AGG(DISTINCT ( languages.name )) as languages_name`,
 		`genres.name as genre_name`,
+		`(SELECT AVG(ratings) FROM UNNEST(books.rating) ratings) as rating`,
 	).
 		InnerJoins("author_book", "author_book.book_id = books.id").
 		InnerJoins("authors", "authors.id = author_book.author_id").
@@ -535,6 +671,7 @@ func (controller *BookController) GetOneBook() gin.HandlerFunc {
 			&languagesId,
 			&languagesNames,
 			&book.Genre.Name,
+			&book.Rating,
 		)
 
 		if err != nil && err.Error() == pgx.ErrNoRows.Error() {
@@ -577,14 +714,11 @@ func (controller *BookController) GetOneBook() gin.HandlerFunc {
 }
 
 func Insert() {
-	a := 3
-
 	for i := 0; i < 2000; i++ {
 		database.DB.Model(&usermodels.Book{}).Create(&usermodels.Book{
 			Title:         faker.Name(),
 			CoverPhotoUrl: faker.URL(),
 			Description:   faker.Paragraph(),
-			Rating:        &a,
 		})
 		fmt.Printf("inserted %d", i)
 	}
@@ -643,8 +777,37 @@ func (controller *BookController) Test() gin.HandlerFunc {
 	}
 }
 
-// BACKUP SENA
+func (controller *BookController) UpdateRating() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		rating := ctx.Param("rating")
+		id := ctx.Param("id")
+
+		var response struct {
+			ID uint `json:"ID"`
+		}
+		err := database.DB.Raw(`
+			UPDATE books
+			SET rating = rating || ?
+			WHERE  id = ?
+			RETURNING id
+		`, rating, id).Scan(&response)
+
+		if err.Error != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"code":   consts.ErrorCodeDatabase,
+				"error":  err.Error.Error(),
+				"target": consts.BookModelName,
+			})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{
+			"response": response,
+		})
+	}
+}
 
 // SELECT books.cover_photo_url, books.id, books.title,
 // (SELECT SUM(sold) from UNNEST(ARRAY_AGG(CAST(order_details.amount as int))) sold)
 // as total_sold, books.rating FROM books INNER JOIN order_details ON order_details.book_id = books.id GROUP BY books.id ORDER BY id desc
+

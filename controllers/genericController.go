@@ -197,7 +197,7 @@ func AssignManyToManyRelation[T interface{}, K interface{}](relation string, tar
 		}
 
 		errDatabase := database.DB.Model(&modelToUpdate).Association(relation).Append(&modelData)
-		if err.Error != nil {
+		if errDatabase != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"code":    consts.ErrorCodeDatabase,
 				"target":  target,

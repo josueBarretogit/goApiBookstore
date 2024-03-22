@@ -44,9 +44,9 @@ type Payment struct {
 
 type BankAccount struct {
 	gorm.Model
-	BankProvider string `json:"bank_provider,omitempty"`
-	BankNumber   string `json:"bank_number,omitempty"`
-	AccountID    uint   `json:"account_id,omitempty"`
+	BankProvider string `json:"bankProvider,omitempty"`
+	BankNumber   string `json:"bankNumber,omitempty"`
+	AccountID    uint   `json:"idAccount,omitempty"`
 }
 
 type CreditCard struct {

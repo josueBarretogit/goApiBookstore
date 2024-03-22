@@ -49,5 +49,6 @@ func ConnectToDB() (err error) {
 		return err
 	}
 
+
 	return nil
 }

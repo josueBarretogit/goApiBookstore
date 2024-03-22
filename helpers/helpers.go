@@ -18,10 +18,9 @@ type SQLBuilder struct {
 	innerJoins        string
 	whereSentence     string
 	groupBy           string
-
-	pagination       string
-	orderBy          string
-	PreparedSentence string
+	pagination        string
+	orderBy           string
+	PreparedSentence  string
 }
 
 func (builder *SQLBuilder) Select(columns ...string) *SQLBuilder {
